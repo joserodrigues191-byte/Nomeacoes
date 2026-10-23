@@ -7,10 +7,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Nomeações">
-<meta name="theme-color" content="#1f4e8c">
+<meta name="theme-color" content="#04271d">
 <style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f5f6f8;--fg:#1c2230;--mut:#667085;--card:#fff;--bd:#dfe3ea;--ac:#1f4e8c;--hi:#c0392b;--lo:#b7791f;--ok:#2f855a}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151c;--fg:#e8ebf1;--mut:#9aa4b5;--card:#1b202b;--bd:#2c3343;--ac:#6ea3e6;--hi:#ef7b6e;--lo:#e0b45c;--ok:#6fcf97}}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#04271d;--fg:#eef4f0;--mut:#9fbdaf;--card:#0a3a2b;--bd:#1a5942;--ac:#2a9d6a;--onac:#fff;--hi:#f08a7e;--lo:#e3b95a;--ok:#74d6a0;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*:before,*:after{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -19,7 +18,7 @@ h1{font-size:20px;margin:4px 0 12px}h2{font-size:16px;margin:0 0 8px}
 nav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 nav button{flex:1;min-width:110px}
 button,select,input,textarea{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 10px}
-button{cursor:pointer}button.on,button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+button{cursor:pointer}button.on,button.pri{background:var(--ac);color:var(--onac,#fff);border-color:var(--ac)}
 button.del{color:var(--hi)}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
@@ -36,12 +35,12 @@ th{color:var(--mut);font-weight:600}
 textarea{width:100%;min-height:110px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
 .pl2{padding:8px 0;border-bottom:1px solid var(--bd)}
 .f{display:flex;flex-direction:column;gap:2px;flex:1;min-width:130px}.f span{font-size:12px;color:var(--mut)}.f>*{width:100%;min-width:0}
-.g3{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:8px;margin-bottom:8px}.g3 .f{min-width:0}
+.g3{display:grid;grid-template-columns:1.2fr 1fr 1.35fr;gap:8px;margin-bottom:8px}.g3 .f{min-width:0}.g3 select{padding-left:6px;padding-right:2px}
 .mn{display:flex;flex-direction:column;gap:6px;padding:6px 0 10px;border-bottom:1px solid var(--bd)}
 .dots{flex:0 0 auto;min-width:44px;font-size:20px;line-height:1;padding:6px 10px}
 .row>.f.s{flex:0 0 100px;min-width:90px}.row>.f.m{flex:0 0 130px;min-width:110px}
 .pl{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;padding:4px 0;border-bottom:1px solid var(--bd)}
-.g3{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:8px;margin-bottom:8px}.g3 .f{min-width:0}
+.g3{display:grid;grid-template-columns:1.2fr 1fr 1.35fr;gap:8px;margin-bottom:8px}.g3 .f{min-width:0}.g3 select{padding-left:6px;padding-right:2px}
 .pr{display:flex;align-items:center;justify-content:space-between;gap:8px}.ln{flex:1;min-width:0;overflow-wrap:break-word;word-break:normal}.tt{font-weight:600;overflow-wrap:break-word}
 .mw{position:relative;flex:0 0 auto}.dots{font-size:20px;line-height:1;padding:2px 12px}
 .menu{position:absolute;right:0;top:100%;z-index:5;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:4px;display:flex;flex-direction:column;min-width:130px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
@@ -52,11 +51,33 @@ textarea{width:100%;min-height:110px;font-family:ui-monospace,Menlo,monospace;fo
 .ih{margin:14px 0 2px;font-size:13px;font-weight:700;color:var(--ac);text-transform:uppercase;letter-spacing:.04em}
 .kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--bd)}.kv span{color:var(--mut)}.kv b{text-align:right;font-weight:600}
 #lista[hidden]{display:none}
+.ib{flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:42px;height:42px;padding:0;border-radius:10px}
+.hd{display:flex;align-items:center;gap:12px;margin:2px 0 12px}.hd h1{margin:0}
+.ib{flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border-radius:10px}
+nav{display:block;margin-bottom:0}nav .hd .ib{flex:0 0 44px;min-width:0;width:44px}
+.home{position:relative;min-height:calc(100vh - 120px);min-height:calc(100dvh - 120px);display:flex;align-items:center;justify-content:center;text-align:center;padding:0 8px}
+body.hm::before{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(rgba(4,39,29,.62),rgba(4,39,29,.22) 38%,rgba(4,39,29,.55)),url(fundo.jpg) center/cover no-repeat}
+body.hm .bn{text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.ht{position:relative;font-size:26px;line-height:1.25;margin:0;max-width:540px;text-shadow:0 1px 8px var(--bg),0 0 2px var(--bg)}
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:19}#ov[hidden]{display:none}
+#dr{position:fixed;top:0;left:0;bottom:0;width:min(82vw,320px);background:var(--card);border-right:1px solid var(--bd);transform:translateX(-102%);transition:transform .22s ease;z-index:20;padding-top:env(safe-area-inset-top,0px);overflow-y:auto;visibility:hidden}
+#dr.open{transform:none;visibility:visible}
+.dl{display:block;height:110px;margin:22px auto 14px}
+.mi{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;border-bottom:1px solid var(--bd);border-radius:0;padding:17px 20px;text-align:left;font-size:17px;background:transparent}
+.mi i{font-style:normal;color:var(--mut);font-size:22px}.mi.on{background:var(--ac);color:var(--onac,#fff)}.mi.on i{color:var(--onac,#fff)}
+.bn{flex:1;font-weight:700;font-size:15px;line-height:1.25}.sec{margin:4px 0 12px}
 </style></head><body><main>
-<h1>Nomeações da Banda</h1>
+
 <nav id="nav"></nav>
 <div id="v"></div>
 </main>
+<div id="ov" hidden onclick="closeM()"></div>
+<aside id="dr" aria-hidden="true" aria-label="Menu"><img src="emblema.png" alt="" class="dl">
+<button class="mi" data-t="home" onclick="go('home')"><span>Início</span><i>›</i></button>
+<button class="mi" data-t="eq" onclick="go('eq')"><span>Equilíbrio</span><i>›</i></button>
+<button class="mi" data-t="ev" onclick="go('ev')"><span>Cerimónias</span><i>›</i></button>
+<button class="mi" data-t="ef" onclick="go('ef')"><span>Efetivos</span><i>›</i></button>
+<button class="mi" data-t="bk" onclick="go('bk')"><span>Cópia de segurança</span><i>›</i></button></aside>
 <script>
 const ES=["Nomeado","Reserva"];
 const POSTOS=["GPROV","GUARDA","GPRIN","CABO","CCH","CMOR","FUR","2SAR","1SAR","SAJ","SCH","SMOR"];
@@ -65,7 +86,7 @@ Object.assign(LEG,{"CCHEFE":"CCH","GUARDAPROVISÓRIO":"GPROV","GUARDAPRINCIPAL":
 const INSTR=["Oboé","Flauta","Requinta","Clarinete","Fagote","Sax. Alto","Sax. Tenor","Trompa","Trompete","Trombone","Bombardino","Tuba","Percussão"];
 let mn=null,ed=null;
 let lastAdd={posto:"GUARDA",inst:""};
-let S={people:[],events:[]},tab="eq",edit=null,fl={a:"",b:""};
+let S={people:[],events:[]},tab="home",edit=null,fl={a:"",b:""};
 const mig=()=>{S.events.forEach(e=>e.n.forEach(x=>{if(x.s!=="Reserva")x.s="Nomeado"}));S.people.forEach(p=>{const k=String(p.posto||"").toUpperCase().replace(/[\s.\-]/g,"");if(LEG[k])p.posto=LEG[k];fixP(p)})};
 try{const r=localStorage.getItem("nb1");if(r){S=JSON.parse(r);mig()}}catch(e){}
 const save=()=>{try{localStorage.setItem("nb1",JSON.stringify(S))}catch(e){}};
@@ -73,8 +94,15 @@ const $=s=>document.querySelector(s);
 const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const uid=()=>Math.random().toString(36).slice(2,9);
 const P=id=>S.people.find(p=>p.id===id);
-function nav(){$("#nav").innerHTML=[["eq","Equilíbrio"],["ev","Cerimónias"],["ef","Efetivos"],["bk","Cópia de segurança"]].map(([k,n])=>`<button class="${tab===k?"on":""}" onclick="tab='${k}';edit=null;edId=null;vw=null;draw()">${n}</button>`).join("")}
-function draw(){nav();$("#v").innerHTML={eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]()}
+const TT={eq:"Equilíbrio",ev:"Cerimónias",ef:"Efetivos",bk:"Cópia de segurança"};
+function nav(){document.body.classList.toggle("hm",tab==="home");$("#nav").innerHTML=`<div class="hd"><button class="ib" aria-label="Abrir menu" title="Menu" onclick="openM()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><div class="bn">Banda Sinfónica da Guarda Nacional Republicana</div></div>${TT[tab]?`<h1 class="sec">${TT[tab]}</h1>`:""}`;
+document.querySelectorAll(".mi").forEach(b=>b.classList.toggle("on",b.dataset.t===tab))}
+function openM(){$("#ov").hidden=false;$("#dr").classList.add("open");$("#dr").setAttribute("aria-hidden","false")}
+function closeM(){$("#ov").hidden=true;$("#dr").classList.remove("open");$("#dr").setAttribute("aria-hidden","true")}
+function go(t){tab=t;edit=null;edId=null;vw=null;closeM();draw();window.scrollTo(0,0)}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeM()});
+function vHome(){return `<div class="home"></div>`}
+function draw(){nav();$("#v").innerHTML={home:vHome,eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]()}
 /* Efetivos */
 function nk(t){return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[\s.]/g,"")}
 function fixP(p){if(p.adido===undefined){const o=String(p.ordem||"");if(o&&o.length!==7){p.adido=o;p.ordem=""}else p.adido=""}
