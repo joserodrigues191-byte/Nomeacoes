@@ -124,10 +124,10 @@ const EV=id=>S.events.find(x=>x.id===id);
 const iR=p=>{const i=INSTR.indexOf(p.inst);return i<0?99:i};
 function cmpI(a,b){return iR(a)-iR(b)||cmpH(a,b)}
 function vEv(){if(edit)return fEv();if(vw)return vBanda();
-const L=[...S.events].sort((a,b)=>b.data.localeCompare(a.data));
+const L=S.events;
 return `<div class="card"><div class="row"><h2 style="flex:3;margin:0">Cerimónias (${L.length})</h2><button class="pri" onclick="newEv()">+ Nova cerimónia</button></div>
 ${L.map(e=>{const n=e.n.filter(x=>x.s==="Nomeado").length;return `<div class="pl2 pr"><span class="ln" onclick="vw='${e.id}';draw()" style="cursor:pointer"><b>${esc(e.nome||e.local||"Sem nome")}</b><br><span class="mut">${fd(e.data)}${e.local&&e.nome?" · "+esc(e.local):""} · ${n} nomeados${e.montada?"":" · por montar"}</span></span>
-<div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${e.id}')">⋯</button><div class="menu" id="m_${e.id}" hidden><button onclick="vw='${e.id}';draw()">Ver banda</button><button onclick="edit='${e.id}';draw()">Editar</button><button class="del" onclick="delE('${e.id}')">Remover</button></div></div></div>`}).join("")||`<p class="mut">Ainda sem cerimónias.</p>`}</div>`}
+<div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${e.id}')">⋯</button><div class="menu" id="m_${e.id}" hidden><button onclick="edit='${e.id}';draw()">Editar</button><button class="del" onclick="delE('${e.id}')">Remover</button></div></div></div>`}).join("")||`<p class="mut">Ainda sem cerimónias.</p>`}</div>`}
 function newEv(){const e={id:uid(),data:new Date().toISOString().slice(0,10),nome:"",local:"",tipo:"Cerimónia",viag:null,n:[],montada:false};S.events.push(e);edit=e.id;vw=null;save();draw()}
 function delE(id){if(!confirm("Apagar esta cerimónia?"))return;S.events=S.events.filter(e=>e.id!==id);save();draw()}
 function stl(s){return s==="Nomeado"?["n","Nomeado"]:s==="Reserva"?["r","Reserva"]:["","—"]}
@@ -185,7 +185,7 @@ return `<div class="card"><div class="row" style="flex-wrap:nowrap;align-items:f
 <div style="margin-top:8px">${kv("Tipo",esc(e.tipo)||"–")}${kv("Local",esc(e.local)||"–")}${kv("Data",fd(e.data))}${kv("Viagem (ida)",e.viag!=null?fmtV(e.viag):"–")}${kv("Total nomeados",N.length+(R.length?` <span class="mut">(+${R.length} em reserva)</span>`:""))}</div>
 <div id="lista" hidden style="margin-top:12px">${body||`<p class="mut">Sem nomeados.</p>`}
 ${R.length?`<div class="ih">Reserva</div>${R.map(p=>`<div class="pl2">${ln(p)} <span class="mut">(${esc(p.inst||"–")})</span></div>`).join("")}`:""}</div>
-<div class="row" style="margin-top:14px"><button class="pri" onclick="edit='${e.id}';vw=null;draw()">Editar banda</button><button onclick="vw=null;draw()">Voltar</button></div></div>`}
+<div class="row" style="margin-top:14px"><button class="pri" onclick="vw=null;draw()">Voltar</button></div></div>`}
 const HV=()=>{const h=S.cfg&&parseFloat(S.cfg.h);return h>0?h:4};
 const peso=e=>1+2*(e.viag||0)/60/HV();
 function setH(v){const h=parseFloat(String(v).replace(",","."));if(!(h>0)){alert("Indique um número de horas maior que zero.");return draw()}S.cfg=S.cfg||{};S.cfg.h=h;save();draw()}
