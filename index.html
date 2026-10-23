@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-PT"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nomeações da Banda</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Nomeações">
+<meta name="theme-color" content="#1f4e8c">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f5f6f8;--fg:#1c2230;--mut:#667085;--card:#fff;--bd:#dfe3ea;--ac:#1f4e8c;--hi:#c0392b;--lo:#b7791f;--ok:#2f855a}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151c;--fg:#e8ebf1;--mut:#9aa4b5;--card:#1b202b;--bd:#2c3343;--ac:#6ea3e6;--hi:#ef7b6e;--lo:#e0b45c;--ok:#6fcf97}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*:before,*:after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:4px 0 12px}h2{font-size:16px;margin:0 0 8px}
+nav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+nav button{flex:1;min-width:110px}
+button,select,input,textarea{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 10px}
+button{cursor:pointer}button.on,button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+button.del{color:var(--hi)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.row>*{flex:1;min-width:120px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--bd);white-space:nowrap}
+th{color:var(--mut);font-weight:600}
+.mut{color:var(--mut);font-size:13px}
+.bar{height:8px;background:var(--bd);border-radius:4px;min-width:90px;position:relative}
+.bar i{display:block;height:100%;border-radius:4px;background:var(--ac)}
+.tag{padding:1px 8px;border-radius:10px;font-size:12px;border:1px solid currentColor}
+.hi{color:var(--hi)}.lo{color:var(--lo)}.ok{color:var(--ok)}
+textarea{width:100%;min-height:110px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.pl{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;padding:4px 0;border-bottom:1px solid var(--bd)}
+</style></head><body><main>
+<h1>Nomeações da Banda</h1>
+<nav id="nav"></nav>
+<div id="v"></div>
+</main>
+<script>
+const ES=["Foi","Reserva","Dispensado","Substituído"];
+let S={people:[],events:[]},tab="eq",edit=null,fl={a:"",b:""};
+try{const r=localStorage.getItem("nb1");if(r)S=JSON.parse(r)}catch(e){}
+const save=()=>{try{localStorage.setItem("nb1",JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s);
+const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const P=id=>S.people.find(p=>p.id===id);
+function nav(){$("#nav").innerHTML=[["eq","Equilíbrio"],["ev","Cerimónias"],["ef","Efetivos"],["bk","Cópia de segurança"]].map(([k,n])=>`<button class="${tab===k?"on":""}" onclick="tab='${k}';edit=null;draw()">${n}</button>`).join("")}
+function draw(){nav();$("#v").innerHTML={eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]()}
+/* Efetivos */
+function vEf(){return `<div class="card"><h2>Adicionar efetivos</h2>
+<p class="mut">Uma linha por pessoa: ordem;posto;nome;instrumento (use dados fictícios para testar).</p>
+<textarea id="bulk" placeholder="97;GPRIN;Nome Exemplo;Clarinete"></textarea>
+<div class="row"><button class="pri" onclick="addBulk()">Adicionar</button></div></div>
+<div class="card"><h2>Cadastro (${S.people.length})</h2><div class="tw"><table><tr><th>Ordem</th><th>Posto</th><th>Nome</th><th>Inst.</th><th></th></tr>
+${[...S.people].sort((a,b)=>a.ordem-b.ordem).map(p=>`<tr><td>${esc(p.ordem)}</td><td>${esc(p.posto)}</td><td>${esc(p.nome)}</td><td>${esc(p.inst)}</td><td><button class="del" onclick="delP('${p.id}')">Remover</button></td></tr>`).join("")||`<tr><td colspan="5" class="mut">Ainda sem efetivos.</td></tr>`}</table></div></div>`}
+function addBulk(){const t=$("#bulk").value.split("\n").map(l=>l.trim()).filter(Boolean);
+t.forEach(l=>{const [o,po,n,i]=l.split(";").map(x=>(x||"").trim());if(n)S.people.push({id:uid(),ordem:parseInt(o)||0,posto:po,nome:n,inst:i})});save();draw()}
+function delP(id){if(!confirm("Remover este efetivo e os seus registos?"))return;S.people=S.people.filter(p=>p.id!==id);S.events.forEach(e=>e.n=e.n.filter(x=>x.p!==id));save();draw()}
+/* Cerimónias */
+function vEv(){if(edit)return fEv();
+return `<div class="card"><div class="row"><h2 style="flex:3;margin:0">Cerimónias (${S.events.length})</h2><button class="pri" onclick="newEv()">+ Nova cerimónia</button></div><div class="tw"><table><tr><th>Data</th><th>Local</th><th>Tipo</th><th>Dias</th><th>Foram</th><th></th></tr>
+${[...S.events].sort((a,b)=>b.data.localeCompare(a.data)).map(e=>`<tr><td>${esc(e.data)}</td><td>${esc(e.local)}</td><td>${esc(e.tipo)}</td><td>${e.dias}</td><td>${e.n.filter(x=>x.s==="Foi").length}</td><td><button onclick="edit='${e.id}';draw()">Editar</button> <button class="del" onclick="delE('${e.id}')">Apagar</button></td></tr>`).join("")||`<tr><td colspan="6" class="mut">Ainda sem cerimónias.</td></tr>`}</table></div></div>`}
+function newEv(){const e={id:uid(),data:new Date().toISOString().slice(0,10),local:"",tipo:"Cerimónia",dias:1,n:[]};S.events.push(e);edit=e.id;draw()}
+function delE(id){if(!confirm("Apagar esta cerimónia?"))return;S.events=S.events.filter(e=>e.id!==id);save();draw()}
+function fEv(){const e=S.events.find(x=>x.id===edit);if(!e){edit=null;return vEv()}
+const st=id=>(e.n.find(x=>x.p===id)||{}).s||"";
+return `<div class="card"><h2>Registo da cerimónia</h2><details style="margin-bottom:10px"><summary><b>Colar lista</b> (texto copiado da fotografia)</summary><p class="mut">Na fotografia, mantenha o dedo sobre o texto, selecione tudo, copie e cole aqui. As pessoas são reconhecidas pelo nome ou pela ordem, por isso o cadastro tem de estar preenchido.</p><textarea id="paste"></textarea><div class="row"><button class="pri" onclick="readList()">Ler lista</button></div></details><div class="row">
+<input type="date" value="${e.data}" onchange="up('data',this.value)">
+<input placeholder="Local" value="${esc(e.local)}" onchange="up('local',this.value)">
+<input placeholder="Tipo" value="${esc(e.tipo)}" onchange="up('tipo',this.value)">
+<input type="number" min="1" title="Dias fora" value="${e.dias}" onchange="up('dias',Math.max(1,parseInt(this.value)||1))"></div>
+<p class="mut">Escolha o estado de cada pessoa. “Reserva” não conta como trabalho feito, “Dispensado” e “Substituído” ficam registados.</p>
+${[...S.people].sort((a,b)=>a.ordem-b.ordem).map(p=>`<div class="pl"><span>${esc(p.ordem)} · ${esc(p.posto)} ${esc(p.nome)} <span class="mut">${esc(p.inst)}</span></span>
+<select onchange="setS('${p.id}',this.value)"><option value="">—</option>${ES.map(s=>`<option ${st(p.id)===s?"selected":""}>${s}</option>`).join("")}</select></div>`).join("")||`<p class="mut">Adicione primeiro os efetivos.</p>`}
+<div class="row" style="margin-top:10px"><button class="pri" onclick="edit=null;draw()">Concluir</button></div></div>`}
+function up(k,v){S.events.find(x=>x.id===edit)[k]=v;save()}
+function setS(p,s){const e=S.events.find(x=>x.id===edit);e.n=e.n.filter(x=>x.p!==p);if(s)e.n.push({p,s});save()}
+function readList(){const t=$("#paste").value;if(!t.trim())return alert("Cole primeiro o texto da lista.");
+const e=S.events.find(x=>x.id===edit),nz=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase();
+const T=nz(t),L=t.split("\n").map(x=>x.trim()).filter(Boolean),M=["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+const m=T.match(/(\d{1,2})\s*(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\s*(\d{2,4})/);
+if(m){const y=m[3].length===2?"20"+m[3]:m[3];e.data=y+"-"+String(M.indexOf(m[2])+1).padStart(2,"0")+"-"+m[1].padStart(2,"0");
+const k=m[0].replace(/\s+/g,""),i=L.findIndex(l=>nz(l).replace(/\s+/g,"").includes(k)),loc=[];
+if(i>=0){for(const l of L.slice(i+1)){if(/NA SALA|SAIDA|UNIFORME|CHEFIA|RESERVA/.test(nz(l)))break;if(/^\(/.test(l))continue;loc.push(l);if(loc.length==2)break}
+if(loc.length)e.local=loc.join(" – ")}}
+const r=T.indexOf("RESERVA"),rt=r>=0?T.slice(r,r+70):"",n=[];
+S.people.forEach(p=>{const nn=nz(p.nome),byN=nn&&T.includes(nn),byO=p.ordem&&L.some(l=>new RegExp("(^|\\D)"+p.ordem+"(\\D|$)").test(l)&&/\d{6,8}/.test(l));
+if(!byN&&!byO)return;const isR=(nn&&rt.includes(nn))||L.some(l=>nz(l).includes(nn)&&/\sR\s*$/.test(nz(l)));n.push({p:p.id,s:isR?"Reserva":"Foi"})});
+e.n=n;save();draw();alert(n.length?n.length+" pessoas reconhecidas ("+n.filter(x=>x.s==="Reserva").length+" em reserva). Confirme tudo antes de concluir.":"Nenhuma pessoa reconhecida. Verifique se o cadastro está preenchido.")}
+/* Equilíbrio */
+function vEq(){const ev=S.events.filter(e=>(!fl.a||e.data>=fl.a)&&(!fl.b||e.data<=fl.b));
+const r=S.people.map(p=>{let f=0,rs=0,d=0,dias=0;ev.forEach(e=>{const x=e.n.find(n=>n.p===p.id);if(!x)return;if(x.s==="Foi"){f++;dias+=e.dias}else if(x.s==="Reserva")rs++;else d++});return{p,f,rs,d,dias}}).sort((a,b)=>b.f-a.f||b.dias-a.dias);
+const avg=r.length?r.reduce((s,x)=>s+x.f,0)/r.length:0,mx=Math.max(1,...r.map(x=>x.f));
+const fl2=x=>{if(!avg)return"";const t=Math.max(1,avg*.25);return x.f>avg+t?`<span class="tag hi">acima</span>`:x.f<avg-t?`<span class="tag lo">abaixo</span>`:`<span class="tag ok">na média</span>`};
+return `<div class="card"><h2>Período</h2><div class="row"><input type="date" value="${fl.a}" onchange="fl.a=this.value;draw()"><input type="date" value="${fl.b}" onchange="fl.b=this.value;draw()"><button onclick="fl={a:'',b:''};draw()">Limpar</button></div>
+<p class="mut">${ev.length} cerimónias no período · média de ${avg.toFixed(1)} por pessoa. Alerta quando o desvio passa 25% da média (mínimo 1).</p></div>
+<div class="card"><div class="tw"><table><tr><th>Pessoa</th><th>Foi</th><th></th><th>Dias fora</th><th>Reserva</th><th>Disp./Subst.</th><th>Estado</th></tr>
+${r.map(x=>`<tr><td>${esc(x.p.posto)} ${esc(x.p.nome)} <span class="mut">${esc(x.p.inst)}</span></td><td>${x.f}</td><td><div class="bar"><i style="width:${x.f/mx*100}%"></i></div></td><td>${x.dias}</td><td>${x.rs}</td><td>${x.d}</td><td>${fl2(x)}</td></tr>`).join("")||`<tr><td class="mut">Sem dados.</td></tr>`}</table></div></div>`}
+/* Backup */
+function vBk(){return `<div class="card"><h2>Cópia de segurança</h2><p class="mut">Os dados ficam só neste dispositivo e navegador. Copie o texto abaixo e guarde-o num local seguro. Para restaurar, cole-o e carregue em Restaurar.</p>
+<textarea id="bk">${esc(JSON.stringify(S))}</textarea>
+<div class="row"><button class="pri" onclick="rest()">Restaurar</button><button class="del" onclick="wipe()">Apagar tudo</button></div></div>`}
+function rest(){try{const d=JSON.parse($("#bk").value);if(!Array.isArray(d.people)||!Array.isArray(d.events))throw 0;S=d;save();tab="eq";draw()}catch(e){alert("Texto inválido.")}}
+function wipe(){if(confirm("Apagar todos os dados?")){S={people:[],events:[]};save();draw()}}
+draw();
+try{if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js")}catch(e){}
+</script></body></html>
