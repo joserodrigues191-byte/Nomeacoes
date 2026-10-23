@@ -54,12 +54,22 @@ function draw(){nav();$("#v").innerHTML={eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]()}
 /* Efetivos */
 function vEf(){return `<div class="card"><h2>Adicionar efetivos</h2>
 <p class="mut">Mais rápido: na fotografia da lista, copie o texto da tabela, cole aqui e carregue em “Converter”. Confirme as linhas e carregue em “Adicionar”. Também pode escrever uma linha por pessoa: ordem;posto;nome;instrumento. Quem já existe (mesma ordem) é ignorado.</p>
-<textarea id="bulk" placeholder="97;GPRIN;Nome Exemplo;Clarinete"></textarea>
+<div class="row"><input type="file" id="foto" accept="image/*"><button class="pri" onclick="lerFoto('bulk',convList)">Ler foto</button></div><p class="mut" id="st"></p><textarea id="bulk" placeholder="97;GPRIN;Nome Exemplo;Clarinete"></textarea>
 <div class="row"><button onclick="convList()">Converter texto colado</button><button class="pri" onclick="addBulk()">Adicionar</button></div></div>
 <div class="card"><h2>Cadastro (${S.people.length})</h2><div class="tw"><table><tr><th>Ordem</th><th>Posto</th><th>Nome</th><th>Inst.</th><th></th></tr>
 ${[...S.people].sort((a,b)=>a.ordem-b.ordem).map(p=>`<tr><td>${esc(p.ordem)}</td><td>${esc(p.posto)}</td><td>${esc(p.nome)}</td><td>${esc(p.inst)}</td><td><button class="del" onclick="delP('${p.id}')">Remover</button></td></tr>`).join("")||`<tr><td colspan="5" class="mut">Ainda sem efetivos.</td></tr>`}</table></div></div>`}
 function addBulk(){const t=$("#bulk").value.split("\n").map(l=>l.trim()).filter(Boolean);
 t.forEach(l=>{const [o,po,n,i]=l.split(";").map(x=>(x||"").trim());if(n&&!(parseInt(o)&&S.people.some(q=>q.ordem===parseInt(o))))S.people.push({id:uid(),ordem:parseInt(o)||0,posto:po,nome:n,inst:i})});save();draw()}
+function lerFoto(id,cb){const f=$("#foto").files[0],st=$("#st");if(!f)return alert("Escolha primeiro uma fotografia.");st.textContent="A preparar a imagem…";
+const img=new Image();img.onerror=()=>st.textContent="Imagem inválida.";
+img.onload=async()=>{const k=Math.min(1,2200/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+const x=c.getContext("2d");x.drawImage(img,0,0,c.width,c.height);const d=x.getImageData(0,0,c.width,c.height),p=d.data;
+for(let i=0;i<p.length;i+=4){let g=.3*p[i]+.59*p[i+1]+.11*p[i+2];g=Math.max(0,Math.min(255,(g-128)*1.4+128));p[i]=p[i+1]=p[i+2]=g}x.putImageData(d,0,0);
+try{if(!window.Tesseract)await new Promise((ok,ko)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";s.onload=ok;s.onerror=ko;document.head.appendChild(s)});
+const r=await Tesseract.recognize(c,"por",{logger:m=>{if(m.status)st.textContent=m.status+(m.progress?" "+Math.round(m.progress*100)+"%":"")}});
+$("#"+id).value=r.data.text.replace(/[|_\[\]]/g," ");st.textContent="Leitura concluída.";cb()}
+catch(e){st.textContent="Não foi possível ler a foto. Na primeira vez é preciso ligação à internet."}};
+img.src=URL.createObjectURL(f)}
 function convList(){const ta=$("#bulk"),out=[];ta.value.split("\n").forEach(l=>{const m=l.trim().match(/^(\S+)\s+(\d{1,3})\s+(\d{6,8})\s+(.+)$/);if(!m)return;const t=m[4].split(/\s+/),nm=[];let i=0;
 while(i<t.length&&t[i]===t[i].toUpperCase()&&/[A-ZÀ-Ý]/.test(t[i])){nm.push(t[i]);i++}
 const ins=t.slice(i);while(ins.length&&/^(\d+|R|CO)$/.test(ins[ins.length-1]))ins.pop();out.push([m[2],m[1],nm.join(" "),ins.join(" ")].join(";"))});
@@ -74,7 +84,7 @@ function newEv(){const e={id:uid(),data:new Date().toISOString().slice(0,10),loc
 function delE(id){if(!confirm("Apagar esta cerimónia?"))return;S.events=S.events.filter(e=>e.id!==id);save();draw()}
 function fEv(){const e=S.events.find(x=>x.id===edit);if(!e){edit=null;return vEv()}
 const st=id=>(e.n.find(x=>x.p===id)||{}).s||"";
-return `<div class="card"><h2>Registo da cerimónia</h2><details style="margin-bottom:10px"><summary><b>Colar lista</b> (texto copiado da fotografia)</summary><p class="mut">Na fotografia, mantenha o dedo sobre o texto, selecione tudo, copie e cole aqui. As pessoas são reconhecidas pelo nome ou pela ordem, por isso o cadastro tem de estar preenchido.</p><textarea id="paste"></textarea><div class="row"><button class="pri" onclick="readList()">Ler lista</button></div></details><div class="row">
+return `<div class="card"><h2>Registo da cerimónia</h2><details open style="margin-bottom:10px"><summary><b>Ler lista</b> (foto ou texto)</summary><p class="mut">Escolha a fotografia da lista e carregue em “Ler foto”. Depois confirme a data, o local e as pessoas. Se preferir, cole o texto copiado da foto.</p><div class="row"><input type="file" id="foto" accept="image/*"><button class="pri" onclick="lerFoto('paste',readList)">Ler foto</button></div><p class="mut" id="st"></p><p class="mut">Na fotografia, mantenha o dedo sobre o texto, selecione tudo, copie e cole aqui. As pessoas são reconhecidas pelo nome ou pela ordem, por isso o cadastro tem de estar preenchido.</p><textarea id="paste" placeholder="Texto da lista (preenchido automaticamente ao ler a foto)"></textarea><div class="row"><button class="pri" onclick="readList()">Ler lista</button></div></details><div class="row">
 <input type="date" value="${e.data}" onchange="up('data',this.value)">
 <input placeholder="Local" value="${esc(e.local)}" onchange="up('local',this.value)">
 <input placeholder="Tipo" value="${esc(e.tipo)}" onchange="up('tipo',this.value)">
@@ -96,7 +106,7 @@ if(loc.length)e.local=loc.join(" – ")}}
 const r=T.indexOf("RESERVA"),rt=r>=0?T.slice(r,r+70):"",n=[];
 S.people.forEach(p=>{const nn=nz(p.nome),byN=nn&&T.includes(nn),byO=p.ordem&&L.some(l=>new RegExp("(^|\\D)"+p.ordem+"(\\D|$)").test(l)&&/\d{6,8}/.test(l));
 if(!byN&&!byO)return;const isR=(nn&&rt.includes(nn))||L.some(l=>nz(l).includes(nn)&&/\sR\s*$/.test(nz(l)));n.push({p:p.id,s:isR?"Reserva":"Foi"})});
-e.n=n;save();draw();alert(n.length?n.length+" pessoas reconhecidas ("+n.filter(x=>x.s==="Reserva").length+" em reserva). Confirme tudo antes de concluir.":"Nenhuma pessoa reconhecida. Verifique se o cadastro está preenchido.")}
+const um=L.filter(l=>/(^|\D)\d{6,8}(\D|$)/.test(l)&&!S.people.some(p=>nz(l).includes(nz(p.nome))));e.n=n;save();draw();alert(n.length?n.length+" pessoas reconhecidas ("+n.filter(x=>x.s==="Reserva").length+" em reserva). Confirme tudo antes de concluir."+(um.length?"\n\nLinhas com matrícula que não correspondem a ninguém do cadastro:\n"+um.slice(0,6).join("\n"):""):"Nenhuma pessoa reconhecida. Verifique se o cadastro está preenchido.")}
 /* Equilíbrio */
 function vEq(){const ev=S.events.filter(e=>(!fl.a||e.data>=fl.a)&&(!fl.b||e.data<=fl.b));
 const r=S.people.map(p=>{let f=0,rs=0,d=0,dias=0;ev.forEach(e=>{const x=e.n.find(n=>n.p===p.id);if(!x)return;if(x.s==="Foi"){f++;dias+=e.dias}else if(x.s==="Reserva")rs++;else d++});return{p,f,rs,d,dias}}).sort((a,b)=>b.f-a.f||b.dias-a.dias);
