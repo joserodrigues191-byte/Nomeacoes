@@ -78,10 +78,13 @@ function opts(list,sel,ph){return (sel&&!list.includes(sel)?`<option selected>${
 const fld=(l,c,h)=>`<label class="f ${c}"><span>${l}</span>${h}</label>`;
 const DG="this.value=this.value.replace(/\\D/g,'')";
 let edId=null;
-function frm(x,p){return `<div class="g3">${fld("Posto","",`<select id="${x}P">${opts(POSTOS,p.posto)}</select>`)}${fld("Nº Adido","",`<input id="${x}A" inputmode="numeric" value="${esc(p.adido)}" oninput="${DG}">`)}${fld("Nº Ordem","",`<input id="${x}O" inputmode="numeric" maxlength="7" value="${esc(p.ordem)}" oninput="${DG}">`)}</div>
+function frm(x,p){return `<div class="g3">${fld("Posto","",`<select id="${x}P">${opts([...POSTOS].reverse(),p.posto)}</select>`)}${fld("Nº Adido","",`<input id="${x}A" inputmode="numeric" value="${esc(p.adido)}" oninput="${DG}">`)}${fld("Nº Ordem","",`<input id="${x}O" inputmode="numeric" maxlength="7" value="${esc(p.ordem)}" oninput="${DG}">`)}</div>
 <div class="row">${fld("Nome","",`<input id="${x}N" value="${esc(p.nome)}">`)}</div>
 <div class="row">${fld("Instrumento","",`<select id="${x}I">${opts(INSTR,p.inst,"Selecionar")}</select>`)}</div>`}
-function vEf(){const L=[...S.people].sort((a,b)=>a.ordem-b.ordem),v=x=>esc(x||"–");
+const rk=p=>{const i=POSTOS.indexOf(p.posto);return i<0?-1:i};
+const ad=p=>p.adido?parseInt(p.adido,10):Infinity;
+function cmpH(a,b){const d=rk(b)-rk(a);if(d)return d;const x=ad(a),y=ad(b);if(x!==y)return x<y?-1:1;return String(a.nome).localeCompare(String(b.nome),"pt")}
+function vEf(){const L=[...S.people].sort(cmpH),v=x=>esc(x||"–");
 return `<div class="card"><h2>Adicionar efetivo</h2>${frm("n",{posto:lastAdd.posto,inst:lastAdd.inst})}
 <div class="row"><button class="pri" onclick="addP()">Adicionar</button></div></div>
 <div class="card"><h2>Cadastro (${L.length})</h2>
