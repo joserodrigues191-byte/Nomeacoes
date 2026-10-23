@@ -53,13 +53,18 @@ function nav(){$("#nav").innerHTML=[["eq","Equilíbrio"],["ev","Cerimónias"],["
 function draw(){nav();$("#v").innerHTML={eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]()}
 /* Efetivos */
 function vEf(){return `<div class="card"><h2>Adicionar efetivos</h2>
-<p class="mut">Uma linha por pessoa: ordem;posto;nome;instrumento (use dados fictícios para testar).</p>
+<p class="mut">Mais rápido: na fotografia da lista, copie o texto da tabela, cole aqui e carregue em “Converter”. Confirme as linhas e carregue em “Adicionar”. Também pode escrever uma linha por pessoa: ordem;posto;nome;instrumento. Quem já existe (mesma ordem) é ignorado.</p>
 <textarea id="bulk" placeholder="97;GPRIN;Nome Exemplo;Clarinete"></textarea>
-<div class="row"><button class="pri" onclick="addBulk()">Adicionar</button></div></div>
+<div class="row"><button onclick="convList()">Converter texto colado</button><button class="pri" onclick="addBulk()">Adicionar</button></div></div>
 <div class="card"><h2>Cadastro (${S.people.length})</h2><div class="tw"><table><tr><th>Ordem</th><th>Posto</th><th>Nome</th><th>Inst.</th><th></th></tr>
 ${[...S.people].sort((a,b)=>a.ordem-b.ordem).map(p=>`<tr><td>${esc(p.ordem)}</td><td>${esc(p.posto)}</td><td>${esc(p.nome)}</td><td>${esc(p.inst)}</td><td><button class="del" onclick="delP('${p.id}')">Remover</button></td></tr>`).join("")||`<tr><td colspan="5" class="mut">Ainda sem efetivos.</td></tr>`}</table></div></div>`}
 function addBulk(){const t=$("#bulk").value.split("\n").map(l=>l.trim()).filter(Boolean);
-t.forEach(l=>{const [o,po,n,i]=l.split(";").map(x=>(x||"").trim());if(n)S.people.push({id:uid(),ordem:parseInt(o)||0,posto:po,nome:n,inst:i})});save();draw()}
+t.forEach(l=>{const [o,po,n,i]=l.split(";").map(x=>(x||"").trim());if(n&&!(parseInt(o)&&S.people.some(q=>q.ordem===parseInt(o))))S.people.push({id:uid(),ordem:parseInt(o)||0,posto:po,nome:n,inst:i})});save();draw()}
+function convList(){const ta=$("#bulk"),out=[];ta.value.split("\n").forEach(l=>{const m=l.trim().match(/^(\S+)\s+(\d{1,3})\s+(\d{6,8})\s+(.+)$/);if(!m)return;const t=m[4].split(/\s+/),nm=[];let i=0;
+while(i<t.length&&t[i]===t[i].toUpperCase()&&/[A-ZÀ-Ý]/.test(t[i])){nm.push(t[i]);i++}
+const ins=t.slice(i);while(ins.length&&/^(\d+|R|CO)$/.test(ins[ins.length-1]))ins.pop();out.push([m[2],m[1],nm.join(" "),ins.join(" ")].join(";"))});
+if(!out.length)return alert("Não reconheci nenhuma linha. Cada pessoa tem de aparecer numa só linha: posto, ordem, matrícula, nome, instrumento.");
+ta.value=out.join("\n");alert(out.length+" linhas convertidas. Reveja e carregue em Adicionar.")}
 function delP(id){if(!confirm("Remover este efetivo e os seus registos?"))return;S.people=S.people.filter(p=>p.id!==id);S.events.forEach(e=>e.n=e.n.filter(x=>x.p!==id));save();draw()}
 /* Cerimónias */
 function vEv(){if(edit)return fEv();
