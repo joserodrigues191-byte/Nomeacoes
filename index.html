@@ -51,6 +51,8 @@ textarea{width:100%;min-height:110px;font-family:ui-monospace,Menlo,monospace;fo
 .pk.n{background:color-mix(in srgb,var(--ac) 20%,transparent)}.pk.r{background:color-mix(in srgb,var(--lo) 25%,transparent)}
 .bd{font-size:12px;color:var(--mut);flex:0 0 auto}.pk.n .bd,.pk.r .bd{color:var(--fg);font-weight:600}
 .ih{margin:14px 0 2px;font-size:13px;font-weight:700;color:var(--ac);text-transform:uppercase;letter-spacing:.04em}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--bd)}.kv span{color:var(--mut)}.kv b{text-align:right;font-weight:600}
+#lista[hidden]{display:none}
 </style></head><body><main>
 <h1>Nomeações da Banda</h1>
 <nav id="nav"></nav>
@@ -171,17 +173,19 @@ function cyc(id){const e=EV(edit),x=e.n.find(q=>q.p===id);
 if(!x)e.n.push({p:id,s:"Nomeado"});else if(x.s==="Nomeado")x.s="Reserva";else e.n=e.n.filter(q=>q.p!==id);
 const s=(e.n.find(q=>q.p===id)||{}).s||"",[c,l]=stl(s);$("#r_"+id).className="pk "+c;$("#b_"+id).textContent=l;$("#cnt").innerHTML="<b>"+cnt(e)+"</b>";save()}
 function montar(){const e=EV(edit);if(!e.n.some(x=>x.s==="Nomeado"))return alert("Selecione pelo menos uma pessoa como Nomeado.");e.montada=true;save();vw=e.id;edit=null;draw()}
+function tgl(){const l=$("#lista"),h=l.hidden;l.hidden=!h;$("#eye").setAttribute("aria-pressed",String(h));$("#eye").style.opacity=h?"1":".6"}
+const EYE='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 function vBanda(){const e=EV(vw);if(!e){vw=null;return vEv()}
 const get=s=>e.n.filter(x=>x.s===s).map(x=>P(x.p)).filter(Boolean).sort(cmpI);
 const N=get("Nomeado"),R=get("Reserva"),ln=p=>`${esc(p.posto||"–")}; ${esc(p.adido||"–")}; ${esc(p.ordem||"–")}; ${esc(p.nome)}`;
-let last=null;const body=N.map((p,i)=>{const h=p.inst||"Sem instrumento",t=h!==last?`<div class="ih">${esc(h)}</div>`:"";last=h;return t+`<div class="pl2">${ln(p)}</div>`}).join("");
-return `<div class="card"><h2>${esc(e.nome||"Banda nomeada")}</h2>
-<p>${fd(e.data)} · ${esc(e.local)||"sem local"} · ${esc(e.tipo)}${e.viag!=null?" · viagem (ida) "+fmtV(e.viag):""}</p>
-${body||`<p class="mut">Sem nomeados.</p>`}
-<p style="margin-top:10px"><b>Total: ${N.length}</b></p>
-${R.length?`<div class="ih">Reserva</div>${R.map(p=>`<div class="pl2">${ln(p)} <span class="mut">(${esc(p.inst||"–")})</span></div>`).join("")}`:""}
-<div class="row" style="margin-top:12px"><button class="pri" onclick="edit='${e.id}';vw=null;draw()">Editar banda</button><button onclick="vw=null;draw()">Voltar</button></div></div>`}
-/* Equilíbrio */
+let last=null;const body=N.map(p=>{const h=p.inst||"Sem instrumento",t=h!==last?`<div class="ih">${esc(h)}</div>`:"";last=h;return t+`<div class="pl2">${ln(p)}</div>`}).join("");
+const kv=(k,v)=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`;
+return `<div class="card"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><h2 style="flex:1;margin:0">${esc(e.nome||"Banda nomeada")}</h2>
+<button id="eye" class="dots" style="flex:0 0 auto;min-width:0;padding:6px 10px" aria-label="Ver nomeações" aria-pressed="false" title="Ver nomeações" onclick="tgl()">${EYE}</button></div>
+<div style="margin-top:8px">${kv("Tipo",esc(e.tipo)||"–")}${kv("Local",esc(e.local)||"–")}${kv("Data",fd(e.data))}${kv("Viagem (ida)",e.viag!=null?fmtV(e.viag):"–")}${kv("Total nomeados",N.length+(R.length?` <span class="mut">(+${R.length} em reserva)</span>`:""))}</div>
+<div id="lista" hidden style="margin-top:12px">${body||`<p class="mut">Sem nomeados.</p>`}
+${R.length?`<div class="ih">Reserva</div>${R.map(p=>`<div class="pl2">${ln(p)} <span class="mut">(${esc(p.inst||"–")})</span></div>`).join("")}`:""}</div>
+<div class="row" style="margin-top:14px"><button class="pri" onclick="edit='${e.id}';vw=null;draw()">Editar banda</button><button onclick="vw=null;draw()">Voltar</button></div></div>`}
 const HV=()=>{const h=S.cfg&&parseFloat(S.cfg.h);return h>0?h:4};
 const peso=e=>1+2*(e.viag||0)/60/HV();
 function setH(v){const h=parseFloat(String(v).replace(",","."));if(!(h>0)){alert("Indique um número de horas maior que zero.");return draw()}S.cfg=S.cfg||{};S.cfg.h=h;save();draw()}
