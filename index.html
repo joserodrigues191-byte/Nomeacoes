@@ -37,13 +37,12 @@ textarea{width:100%;min-height:110px;font-family:ui-monospace,Menlo,monospace;fo
 .pl2{padding:8px 0;border-bottom:1px solid var(--bd)}
 .f{display:flex;flex-direction:column;gap:2px;flex:1;min-width:130px}.f span{font-size:12px;color:var(--mut)}.f>*{width:100%;min-width:0}
 .g3{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:8px;margin-bottom:8px}.g3 .f{min-width:0}
-.ln{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--bd)}.ln b{flex:1;font-weight:500;word-break:break-word}
 .mn{display:flex;flex-direction:column;gap:6px;padding:6px 0 10px;border-bottom:1px solid var(--bd)}
 .dots{flex:0 0 auto;min-width:44px;font-size:20px;line-height:1;padding:6px 10px}
 .row>.f.s{flex:0 0 100px;min-width:90px}.row>.f.m{flex:0 0 130px;min-width:110px}
 .pl{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;padding:4px 0;border-bottom:1px solid var(--bd)}
 .g3{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:8px;margin-bottom:8px}.g3 .f{min-width:0}
-.pr{display:flex;align-items:center;justify-content:space-between;gap:8px}.ln{flex:1;min-width:0;overflow-wrap:anywhere}
+.pr{display:flex;align-items:center;justify-content:space-between;gap:8px}.ln{flex:1;min-width:0;overflow-wrap:break-word;word-break:normal}.tt{font-weight:600;overflow-wrap:break-word}
 .mw{position:relative;flex:0 0 auto}.dots{font-size:20px;line-height:1;padding:2px 12px}
 .menu{position:absolute;right:0;top:100%;z-index:5;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:4px;display:flex;flex-direction:column;min-width:130px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .menu[hidden]{display:none}.menu button{border:0;text-align:left;padding:10px 12px}
@@ -126,7 +125,7 @@ function cmpI(a,b){return iR(a)-iR(b)||cmpH(a,b)}
 function vEv(){if(edit)return fEv();if(vw)return vBanda();
 const L=S.events;
 return `<div class="card"><div class="row"><h2 style="flex:3;margin:0">Cerimónias (${L.length})</h2><button class="pri" onclick="newEv()">+ Nova cerimónia</button></div>
-${L.map(e=>{const n=e.n.filter(x=>x.s==="Nomeado").length;return `<div class="pl2 pr"><span class="ln" onclick="vw='${e.id}';draw()" style="cursor:pointer"><b>${esc(e.nome||e.local||"Sem nome")}</b><br><span class="mut">${fd(e.data)}${e.local&&e.nome?" · "+esc(e.local):""} · ${n} nomeados${e.montada?"":" · por montar"}</span></span>
+${L.map(e=>{const n=e.n.filter(x=>x.s==="Nomeado").length;return `<div class="pl2 pr"><div class="ln" onclick="vw='${e.id}';draw()" style="cursor:pointer"><div class="tt">${esc(e.nome||e.local||"Sem nome")}</div><div class="mut">${fd(e.data)}${e.local&&e.nome?" · "+esc(e.local):""} · ${n} nomeados${e.montada?"":" · por montar"}</div></div>
 <div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${e.id}')">⋯</button><div class="menu" id="m_${e.id}" hidden><button onclick="edit='${e.id}';draw()">Editar</button><button class="del" onclick="delE('${e.id}')">Remover</button></div></div></div>`}).join("")||`<p class="mut">Ainda sem cerimónias.</p>`}</div>`}
 function newEv(){const e={id:uid(),data:new Date().toISOString().slice(0,10),nome:"",local:"",tipo:"Cerimónia",viag:null,n:[],montada:false};S.events.push(e);edit=e.id;vw=null;save();draw()}
 function delE(id){if(!confirm("Apagar esta cerimónia?"))return;S.events=S.events.filter(e=>e.id!==id);save();draw()}
