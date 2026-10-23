@@ -35,6 +35,8 @@ th{color:var(--mut);font-weight:600}
 .hi{color:var(--hi)}.lo{color:var(--lo)}.ok{color:var(--ok)}
 textarea{width:100%;min-height:110px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
 .pl2{padding:8px 0;border-bottom:1px solid var(--bd)}
+.f{display:flex;flex-direction:column;gap:2px;flex:1;min-width:130px}.f span{font-size:12px;color:var(--mut)}.f>*{width:100%;min-width:0}
+.row>.f.s{flex:0 0 100px;min-width:90px}.row>.f.m{flex:0 0 130px;min-width:110px}
 .pl{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;padding:4px 0;border-bottom:1px solid var(--bd)}
 </style></head><body><main>
 <h1>Nomeações da Banda</h1>
@@ -46,9 +48,10 @@ const ES=["Nomeado","Reserva"];
 const POSTOS=["GPROV","GUARDA","GPRIN","CABO","CCH","CMOR","FUR","2SAR","1SAR","SAJ","SCH","SMOR"];
 const LEG={};POSTOS.forEach(x=>LEG[x]=x);
 Object.assign(LEG,{"CCHEFE":"CCH","GUARDAPROVISÓRIO":"GPROV","GUARDAPRINCIPAL":"GPRIN","CABOCHEFE":"CCH","CABOMOR":"CMOR","FURRIEL":"FUR","2ºSARGENTO":"2SAR","1ºSARGENTO":"1SAR","SARGENTOAJUDANTE":"SAJ","SARGENTOCHEFE":"SCH","SARGENTOMOR":"SMOR"});
+const INSTR=["Oboé","Flauta","Requinta","Clarinete","Fagote","Sax. Alto","Sax. Tenor","Trompa","Trompete","Trombone","Bombardino","Tuba","Percussão"];
 let lastAdd={posto:"GUARDA",inst:""};
 let S={people:[],events:[]},tab="eq",edit=null,fl={a:"",b:""};
-const mig=()=>{S.events.forEach(e=>e.n.forEach(x=>{if(x.s!=="Reserva")x.s="Nomeado"}));S.people.forEach(p=>{const k=String(p.posto||"").toUpperCase().replace(/[\s.\-]/g,"");if(LEG[k])p.posto=LEG[k]})};
+const mig=()=>{S.events.forEach(e=>e.n.forEach(x=>{if(x.s!=="Reserva")x.s="Nomeado"}));S.people.forEach(p=>{const k=String(p.posto||"").toUpperCase().replace(/[\s.\-]/g,"");if(LEG[k])p.posto=LEG[k];fixP(p)})};
 try{const r=localStorage.getItem("nb1");if(r){S=JSON.parse(r);mig()}}catch(e){}
 const save=()=>{try{localStorage.setItem("nb1",JSON.stringify(S))}catch(e){}};
 const $=s=>document.querySelector(s);
@@ -58,29 +61,41 @@ const P=id=>S.people.find(p=>p.id===id);
 function nav(){$("#nav").innerHTML=[["eq","Equilíbrio"],["ev","Cerimónias"],["ef","Efetivos"],["bk","Cópia de segurança"]].map(([k,n])=>`<button class="${tab===k?"on":""}" onclick="tab='${k}';edit=null;draw()">${n}</button>`).join("")}
 function draw(){nav();$("#v").innerHTML={eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]()}
 /* Efetivos */
-function opts(sel){return (!sel||POSTOS.includes(sel)?"":`<option selected>${esc(sel)}</option>`)+POSTOS.map(x=>`<option ${x===sel?"selected":""}>${x}</option>`).join("")}
+function nk(t){return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[\s.]/g,"")}
+function fixP(p){if(p.adido===undefined){const o=String(p.ordem||"");if(o&&o.length!==7){p.adido=o;p.ordem=""}else p.adido=""}
+p.ordem=String(p.ordem||"");const m=INSTR.find(i=>nk(i)===nk(p.inst));if(m)p.inst=m}
+function opts(list,sel,ph){return (sel&&!list.includes(sel)?`<option selected>${esc(sel)}</option>`:"")+(ph?`<option value="" ${sel?"":"selected"}>${ph}</option>`:"")+list.map(x=>`<option ${x===sel?"selected":""}>${esc(x)}</option>`).join("")}
+const fld=(l,c,h)=>`<label class="f ${c}"><span>${l}</span>${h}</label>`;
+const DG="this.value=this.value.replace(/\\D/g,'')";
 function vEf(){const L=[...S.people].sort((a,b)=>a.ordem-b.ordem);
 return `<div class="card"><h2>Adicionar efetivo</h2><div class="row">
-<input id="nO" type="number" inputmode="numeric" placeholder="Ordem" style="flex:0 0 90px;min-width:70px">
-<select id="nP">${opts(lastAdd.posto)}</select>
-<input id="nN" placeholder="Nome">
-<input id="nI" placeholder="Instrumento (ex.: Clarinete)" value="${esc(lastAdd.inst)}"></div>
+${fld("Posto","s",`<select id="nP">${opts(POSTOS,lastAdd.posto)}</select>`)}
+${fld("Nº Adido","s",`<input id="nA" inputmode="numeric" oninput="${DG}">`)}
+${fld("Nº Ordem","m",`<input id="nO" inputmode="numeric" maxlength="7" oninput="${DG}">`)}
+${fld("Nome","",`<input id="nN">`)}
+${fld("Instrumento","",`<select id="nI">${opts(INSTR,lastAdd.inst,"Selecionar")}</select>`)}</div>
 <div class="row"><button class="pri" onclick="addP()">Adicionar</button></div></div>
 <div class="card"><h2>Cadastro (${L.length})</h2>
-<p class="mut">Toque em qualquer campo para o editar. As alterações ficam guardadas automaticamente. Quando um militar sobe de posto, basta escolher o novo posto.</p>
+<p class="mut">Toque em qualquer campo para o editar. As alterações ficam guardadas automaticamente. Quando um militar sobe de posto, basta escolher o novo posto. O Nº Ordem tem 7 algarismos.</p>
 ${L.map(p=>`<div class="pl2"><div class="row" style="margin:0">
-<input type="number" inputmode="numeric" value="${esc(p.ordem)}" style="flex:0 0 90px;min-width:70px" onchange="edP('${p.id}','ordem',this.value)">
-<select onchange="edP('${p.id}','posto',this.value)">${opts(p.posto)}</select>
-<input value="${esc(p.nome)}" onchange="edP('${p.id}','nome',this.value)">
-<input value="${esc(p.inst)}" onchange="edP('${p.id}','inst',this.value)">
+${fld("Posto","s",`<select onchange="edP('${p.id}','posto',this.value)">${opts(POSTOS,p.posto)}</select>`)}
+${fld("Nº Adido","s",`<input inputmode="numeric" value="${esc(p.adido)}" oninput="${DG}" onchange="edP('${p.id}','adido',this.value)">`)}
+${fld("Nº Ordem","m",`<input inputmode="numeric" maxlength="7" value="${esc(p.ordem)}" oninput="${DG}" onchange="edP('${p.id}','ordem',this.value)">`)}
+${fld("Nome","",`<input value="${esc(p.nome)}" onchange="edP('${p.id}','nome',this.value)">`)}
+${fld("Instrumento","",`<select onchange="edP('${p.id}','inst',this.value)">${opts(INSTR,p.inst,"Selecionar")}</select>`)}
 <button class="del" style="flex:0 0 auto;min-width:0" onclick="delP('${p.id}')">Remover</button></div></div>`).join("")||`<p class="mut">Ainda sem efetivos.</p>`}</div>`}
-function addP(){const n=$("#nN").value.trim(),o=parseInt($("#nO").value)||0,po=$("#nP").value,i=$("#nI").value.trim();
-if(!n)return alert("Escreva o nome.");if(o&&S.people.some(q=>q.ordem===o))return alert("Já existe um efetivo com esta ordem.");
-S.people.push({id:uid(),ordem:o,posto:po,nome:n,inst:i});lastAdd={posto:po,inst:i};save();draw()}
+function addP(){const n=$("#nN").value.trim(),o=$("#nO").value.trim(),a=$("#nA").value.trim(),po=$("#nP").value,i=$("#nI").value;
+if(!/^\d{7}$/.test(o))return alert("O Nº Ordem tem de ter exatamente 7 algarismos.");
+if(!n)return alert("Escreva o nome.");
+if(S.people.some(q=>q.ordem===o))return alert("Já existe um efetivo com este Nº Ordem.");
+S.people.push({id:uid(),posto:po,adido:a,ordem:o,nome:n,inst:i});lastAdd={posto:po,inst:i};save();draw()}
 function edP(id,k,v){const p=P(id);if(!p)return;
-if(k==="ordem"){const o=parseInt(v)||0;if(o&&S.people.some(q=>q.id!==id&&q.ordem===o)){alert("Já existe outro efetivo com esta ordem.");return draw()}p.ordem=o}
+if(k==="ordem"){v=v.replace(/\D/g,"");
+if(!/^\d{7}$/.test(v)){alert("O Nº Ordem tem de ter exatamente 7 algarismos.");return draw()}
+if(S.people.some(q=>q.id!==id&&q.ordem===v)){alert("Já existe outro efetivo com este Nº Ordem.");return draw()}p.ordem=v}
 else if(k==="nome"){if(!v.trim()){alert("O nome não pode ficar vazio.");return draw()}p.nome=v.trim()}
-else p[k]=v.trim();save()}
+else if(k==="adido")p.adido=v.replace(/\D/g,"");
+else p[k]=v;save()}
 function lerFoto(id,cb){const f=$("#foto").files[0],st=$("#st");if(!f)return alert("Escolha primeiro uma fotografia.");st.textContent="A preparar a imagem…";
 const img=new Image();img.onerror=()=>st.textContent="Imagem inválida.";
 img.onload=async()=>{const k=Math.min(1,2200/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
@@ -106,7 +121,7 @@ return `<div class="card"><h2>Registo da cerimónia</h2><details open style="mar
 <input placeholder="Tipo" value="${esc(e.tipo)}" onchange="up('tipo',this.value)">
 <input type="number" min="1" title="Dias fora" value="${e.dias}" onchange="up('dias',Math.max(1,parseInt(this.value)||1))"></div>
 <p class="mut">Registe quem consta na lista. Se souber de uma alteração, mude aqui o estado ou retire a pessoa (—). A app conta as nomeações, e não a presença efetiva.</p>
-${[...S.people].sort((a,b)=>a.ordem-b.ordem).map(p=>`<div class="pl"><span>${esc(p.ordem)} · ${esc(p.posto)} ${esc(p.nome)} <span class="mut">${esc(p.inst)}</span></span>
+${[...S.people].sort((a,b)=>a.ordem-b.ordem).map(p=>`<div class="pl"><span>${esc(p.posto)} ${esc(p.nome)} <span class="mut">${esc(p.inst)}</span></span>
 <select onchange="setS('${p.id}',this.value)"><option value="">—</option>${ES.map(s=>`<option ${st(p.id)===s?"selected":""}>${s}</option>`).join("")}</select></div>`).join("")||`<p class="mut">Adicione primeiro os efetivos.</p>`}
 <div class="row" style="margin-top:10px"><button class="pri" onclick="edit=null;draw()">Concluir</button></div></div>`}
 function up(k,v){S.events.find(x=>x.id===edit)[k]=v;save()}
@@ -120,9 +135,9 @@ const k=m[0].replace(/\s+/g,""),i=L.findIndex(l=>nz(l).replace(/\s+/g,"").includ
 if(i>=0){for(const l of L.slice(i+1)){if(/NA SALA|SAIDA|UNIFORME|CHEFIA|RESERVA/.test(nz(l)))break;if(/^\(/.test(l))continue;loc.push(l);if(loc.length==2)break}
 if(loc.length)e.local=loc.join(" – ")}}
 const r=T.indexOf("RESERVA"),rt=r>=0?T.slice(r,r+70):"",n=[];
-S.people.forEach(p=>{const nn=nz(p.nome),byN=nn&&T.includes(nn),byO=p.ordem&&L.some(l=>new RegExp("(^|\\D)"+p.ordem+"(\\D|$)").test(l)&&/\d{6,8}/.test(l));
+S.people.forEach(p=>{const nn=nz(p.nome),byN=nn&&T.includes(nn),byO=(p.ordem&&new RegExp("(^|\\D)"+p.ordem+"(\\D|$)").test(T))||(p.adido&&L.some(l=>new RegExp("(^|\\D)"+p.adido+"(\\D|$)").test(l)&&/\d{6,8}/.test(l)));
 if(!byN&&!byO)return;const isR=(nn&&rt.includes(nn))||L.some(l=>nz(l).includes(nn)&&/\sR\s*$/.test(nz(l)));n.push({p:p.id,s:isR?"Reserva":"Nomeado"})});
-const um=L.filter(l=>/(^|\D)\d{6,8}(\D|$)/.test(l)&&!S.people.some(p=>nz(l).includes(nz(p.nome))));e.n=n;save();draw();alert(n.length?n.length+" pessoas reconhecidas ("+n.filter(x=>x.s==="Reserva").length+" em reserva). Confirme tudo antes de concluir."+(um.length?"\n\nLinhas com matrícula que não correspondem a ninguém do cadastro:\n"+um.slice(0,6).join("\n"):""):"Nenhuma pessoa reconhecida. Verifique se o cadastro está preenchido.")}
+const um=L.filter(l=>/(^|\D)\d{6,8}(\D|$)/.test(l)&&!S.people.some(p=>nz(l).includes(nz(p.nome))||(p.ordem&&l.includes(p.ordem))));e.n=n;save();draw();alert(n.length?n.length+" pessoas reconhecidas ("+n.filter(x=>x.s==="Reserva").length+" em reserva). Confirme tudo antes de concluir."+(um.length?"\n\nLinhas com matrícula que não correspondem a ninguém do cadastro:\n"+um.slice(0,6).join("\n"):""):"Nenhuma pessoa reconhecida. Verifique se o cadastro está preenchido.")}
 /* Equilíbrio */
 function vEq(){const ev=S.events.filter(e=>(!fl.a||e.data>=fl.a)&&(!fl.b||e.data<=fl.b));
 const r=S.people.map(p=>{let f=0,rs=0,dias=0;ev.forEach(e=>{const x=e.n.find(n=>n.p===p.id);if(!x)return;if(x.s==="Nomeado"){f++;dias+=e.dias}else if(x.s==="Reserva")rs++});return{p,f,rs,dias}}).sort((a,b)=>b.f-a.f||b.dias-a.dias);
