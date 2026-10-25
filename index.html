@@ -237,14 +237,17 @@ const thumbs=(e,rm)=>(e.fotos||[]).map(f=>`<span class="th"><img data-f="${f.id}
 function stl(s){return s==="Nomeado"?["n","Nomeado"]:s==="Reserva"?["r","Reserva"]:["","—"]}
 function cnt(e){const n=e.n.filter(x=>x.s==="Nomeado").length,r=e.n.filter(x=>x.s==="Reserva").length;return `${n} nomeados · ${r} em reserva`}
 let bmC={};
+function nsum(e,n){const ids=new Set(S.people.filter(p=>n==="__none"?!p.inst:nOf(p.inst)===n).map(p=>p.id)),a=e.n.filter(x=>x.s==="Nomeado"&&ids.has(x.p)).length,r=e.n.filter(x=>x.s==="Reserva"&&ids.has(x.p)).length;return `${ids.size} efetivo(s)`+(a?` · ${a} nomeado(s)`:"")+(r?` · ${r} reserva`:"")}
+function updSum(e){document.querySelectorAll(".ns").forEach(el=>el.textContent=nsum(e,el.dataset.n))}
 function balMap(ex){const sa=fl.a,sb=fl.b,m={};fl.a="";fl.b="";try{naipes().forEach(v=>{const d=calcEq(v,{ex});d.r.forEach(x=>{m[x.p.id]={pt:x.pt,st:stT(x,d.avg)}})})}finally{fl.a=sa;fl.b=sb}return m}
 function avHtml(e){const L=e.n.filter(x=>x.s==="Nomeado").map(x=>P(x.p)).filter(p=>p&&bmC[p.id]&&bmC[p.id].st==="acima");
 return L.length?`<div class="wr2">⚠ Já acima da média no seu naipe: <b>${L.map(p=>esc(p.posto+" "+p.nome)).join(", ")}</b></div>`:`<p class="mut" style="margin:6px 0">Nenhum nomeado está acima da média.</p>`}
 function avUpd(){const e=EV(edit),el=$("#av");if(e&&el)el.innerHTML=avHtml(e)}
 function fEv(){const e=EV(edit);if(!e){edit=null;return vEv()}bmC=balMap(e.id);
 const st=id=>(e.n.find(x=>x.p===id)||{}).s||"";let last=null;
-const rows=[...S.people].sort(cmpI).map(p=>{const h=p.inst||"Sem instrumento",t=h!==last?`<div class="ih">${esc(h)}</div>`:"";last=h;const[c,l]=stl(st(p.id));
-return t+`<div class="pk ${c}" id="r_${p.id}" onclick="cyc('${p.id}')"><span class="ln">${esc(p.posto||"–")} · ${esc(p.adido||"–")} · ${esc(p.nome)}${bmC[p.id]&&bmC[p.id].st&&bmC[p.id].st!=="na média"?` <span class="tag ${bmC[p.id].st==="acima"?"hi":"lo"}">${bmC[p.id].st}</span>`:""}</span><span class="bd" id="b_${p.id}">${l}</span></div>`}).join("");
+const pk=p=>{const[c,l]=stl(st(p.id)),bm=bmC[p.id];return `<div class="pk ${c}" id="r_${p.id}" onclick="cyc('${p.id}')"><span class="ln">${esc(p.posto||"–")} · ${esc(p.adido||"–")} · ${esc(p.nome)}${p.inst&&nOf(p.inst)!==p.inst?` <span class="mut">(${esc(p.inst)})</span>`:""}${bm&&bm.st&&bm.st!=="na média"?` <span class="tag ${bm.st==="acima"?"hi":"lo"}">${bm.st}</span>`:""}</span><span class="bd" id="b_${p.id}">${l}</span></div>`};
+const rows=naipes().map(n=>{const G=S.people.filter(p=>n==="__none"?!p.inst:nOf(p.inst)===n).sort(cmpH);if(!G.length)return"";
+return `<details class="nd" ${fl.mo&&fl.mo[n]?"open":""} ontoggle="(fl.mo=fl.mo||{})['${esc(n)}']=this.open"><summary><span class="tt">${esc(nLbl(n))}</span> <span class="mut ns" data-n="${esc(n)}">${nsum(e,n)}</span></summary>${G.map(pk).join("")}</details>`}).join("");
 return `<div class="card"><h2>${e.montada?"Editar cerimónia":"Nova cerimónia"}</h2><div class="row">${fld("Nome da cerimónia","",`<input value="${esc(e.nome)}" placeholder="Ex.: Cartaxo – CTER Santarém" onchange="up('nome',this.value)">`)}</div>
 <div class="g3" style="grid-template-columns:1fr 1fr">
 ${fld("Local","",`<input value="${esc(e.local)}" placeholder="Ex.: Cartaxo" onchange="up('local',this.value);calcViagem()">`)}
@@ -289,7 +292,7 @@ const LAB={nome:"Nome",local:"Local",data:"Data",tipo:"Tipo"};
 function up(k,v){const e=EV(edit);if(!e)return;const o=e[k];e[k]=v;if(o!==v&&(o||v)){if(k==="notas")lg(e,"Notas alteradas");else if(LAB[k]){const f=k==="data"?fd:(x=>x||"–");lg(e,`${LAB[k]}: ${f(o)} → ${f(v)}`)}}save()}
 function cyc(id){const e=EV(edit),x=e.n.find(q=>q.p===id),o0=x?x.s:"";
 if(!x)e.n.push({p:id,s:"Nomeado"});else if(x.s==="Nomeado")x.s="Reserva";else e.n=e.n.filter(q=>q.p!==id);
-const s=(e.n.find(q=>q.p===id)||{}).s||"",[c,l]=stl(s);{const p=P(id);lg(e,`${p?p.posto+" "+p.nome:"?"}: ${o0||"fora"} → ${s||"fora"}`)}$("#r_"+id).className="pk "+c;$("#b_"+id).textContent=l;$("#cnt").innerHTML="<b>"+cnt(e)+"</b>";avUpd();save()}
+const s=(e.n.find(q=>q.p===id)||{}).s||"",[c,l]=stl(s);{const p=P(id);lg(e,`${p?p.posto+" "+p.nome:"?"}: ${o0||"fora"} → ${s||"fora"}`)}$("#r_"+id).className="pk "+c;$("#b_"+id).textContent=l;$("#cnt").innerHTML="<b>"+cnt(e)+"</b>";avUpd();updSum(e);save()}
 function montar(){const e=EV(edit);if(!e.n.some(x=>x.s==="Nomeado"))return alert("Selecione pelo menos uma pessoa como Nomeado.");{const nv=!e.montada;e.montada=true;if(nv)lg(e,`Banda montada: ${e.n.filter(x=>x.s==="Nomeado").length} nomeados, ${e.n.filter(x=>x.s==="Reserva").length} em reserva`)}save();vw=e.id;edit=null;draw()}
 function tgl(){const l=$("#lista"),h=l.hidden;l.hidden=!h;$("#eye").setAttribute("aria-pressed",String(h));$("#eye").style.opacity=h?"1":".6"}
 const EYE='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
