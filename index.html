@@ -68,7 +68,7 @@ body.hm .bn{text-shadow:0 1px 6px rgba(0,0,0,.7)}
 .bn{flex:1;font-weight:700;font-size:15px;line-height:1.25}.sec{margin:4px 0 12px}
 .th{position:relative;display:inline-block;margin:0 8px 8px 0}.th img{width:92px;height:92px;object-fit:cover;border-radius:8px;border:1px solid var(--bd);background:var(--bd);display:block}.th button{position:absolute;top:-6px;right:-6px;min-width:0;width:26px;height:26px;padding:0;border-radius:13px;font-size:13px;line-height:1}
 #vwr{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;touch-action:pinch-zoom}#vwr[hidden]{display:none}#vwr img{max-width:100%;max-height:100%;object-fit:contain}#vwr button{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:14px;min-width:0;font-size:20px;padding:6px 12px}
-textarea.nt{min-height:84px;font-family:inherit;font-size:15px}.hist{margin-top:8px;padding-top:6px;border-top:1px dashed var(--bd)}.hist .hl{padding:5px 0;border-bottom:1px solid var(--bd)}.hist .hl:last-child{border:0}
+textarea.nt{min-height:84px;font-family:inherit;font-size:15px}.hist{margin-top:8px;padding-top:6px;border-top:1px dashed var(--bd)}.hist .hl{padding:5px 0;border-bottom:1px solid var(--bd)}.hist .hl:last-child{border:0}.lgd .hl{padding:5px 0;border-bottom:1px solid var(--bd)}.cht{width:100%;height:auto;display:block}.cht text{fill:var(--mut);font-size:9px}.cht .vl{fill:var(--fg)}.cht .bs{stroke:var(--bd)}.hmw{overflow-x:auto}.hmt{border-collapse:separate;border-spacing:2px;font-size:11px}.hmt td{padding:0;white-space:nowrap}.hmt .nm{max-width:104px;overflow:hidden;text-overflow:ellipsis;padding-right:6px}.hmt .c{width:21px;height:21px;text-align:center;border-radius:3px;position:relative}.hmt .c i{position:absolute;inset:0;background:var(--ac);border-radius:3px}.hmt .c b{position:relative;font-weight:600}.hmt th{font-size:10px;color:var(--mut);font-weight:400;padding:0}.lgd summary{cursor:pointer;margin-bottom:4px}
 </style></head><body><main>
 
 <nav id="nav"></nav>
@@ -78,6 +78,7 @@ textarea.nt{min-height:84px;font-family:inherit;font-size:15px}.hist{margin-top:
 <aside id="dr" aria-hidden="true" aria-label="Menu"><img src="emblema.png" alt="" class="dl">
 <button class="mi" data-t="home" onclick="go('home')"><span>Início</span><i>›</i></button>
 <button class="mi" data-t="eq" onclick="go('eq')"><span>Equilíbrio</span><i>›</i></button>
+<button class="mi" data-t="ec" onclick="go('ec')"><span>Evolução</span><i>›</i></button>
 <button class="mi" data-t="ev" onclick="go('ev')"><span>Cerimónias</span><i>›</i></button>
 <button class="mi" data-t="ef" onclick="go('ef')"><span>Efetivos</span><i>›</i></button>
 <button class="mi" data-t="bk" onclick="go('bk')"><span>Cópia de segurança</span><i>›</i></button></aside>
@@ -89,7 +90,7 @@ Object.assign(LEG,{"CCHEFE":"CCH","GUARDAPROVISÓRIO":"GPROV","GUARDAPRINCIPAL":
 const INSTR=["Oboé","Flauta","Requinta","Clarinete","Fagote","Sax. Alto","Sax. Tenor","Trompa","Trompete","Trombone","Bombardino","Tuba","Percussão"];
 let mn=null,ed=null;
 let lastAdd={posto:"GUARDA",inst:""};
-let S={people:[],events:[]},tab="home",edit=null,fl={a:"",b:"",n:"",x:"",sh:0,sp:0,so:false,pp:""};
+let S={people:[],events:[]},tab="home",edit=null,fl={a:"",b:"",n:"",x:"",sh:0,sp:0,so:false,pp:"",ey:"",en:""};
 const mig=()=>{S.events.forEach(e=>e.n.forEach(x=>{if(x.s!=="Reserva")x.s="Nomeado"}));S.people.forEach(p=>{const k=String(p.posto||"").toUpperCase().replace(/[\s.\-]/g,"");if(LEG[k])p.posto=LEG[k];fixP(p)})};
 try{const r=localStorage.getItem("nb1");if(r){S=JSON.parse(r);mig()}}catch(e){}
 const save=()=>{try{localStorage.setItem("nb1",JSON.stringify(S))}catch(e){}};
@@ -97,7 +98,7 @@ const $=s=>document.querySelector(s);
 const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const uid=()=>Math.random().toString(36).slice(2,9);
 const P=id=>S.people.find(p=>p.id===id);
-const TT={eq:"Equilíbrio",ev:"Cerimónias",ef:"Efetivos",bk:"Cópia de segurança"};
+const TT={ec:"Evolução",eq:"Equilíbrio",ev:"Cerimónias",ef:"Efetivos",bk:"Cópia de segurança"};
 function nav(){document.body.classList.toggle("hm",tab==="home");$("#nav").innerHTML=`<div class="hd"><button class="ib" aria-label="Abrir menu" title="Menu" onclick="openM()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><div class="bn">Banda Sinfónica da Guarda Nacional Republicana</div></div>${TT[tab]?`<h1 class="sec">${TT[tab]}</h1>`:""}`;
 document.querySelectorAll(".mi").forEach(b=>b.classList.toggle("on",b.dataset.t===tab))}
 function openM(){$("#ov").hidden=false;$("#dr").classList.add("open");$("#dr").setAttribute("aria-hidden","false")}
@@ -105,7 +106,7 @@ function closeM(){$("#ov").hidden=true;$("#dr").classList.remove("open");$("#dr"
 function go(t){tab=t;edit=null;edId=null;vw=null;if(t==="eq")fl.n="";closeM();draw();window.scrollTo(0,0)}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeM()});
 function vHome(){return `<div class="home"></div>`}
-function draw(){nav();$("#v").innerHTML={home:vHome,eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]();loadImgs()}
+function draw(){nav();$("#v").innerHTML={home:vHome,ec:vEc,eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]();loadImgs()}
 /* Efetivos */
 function nk(t){return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[\s.]/g,"")}
 function fixP(p){if(p.adido===undefined){const o=String(p.ordem||"");if(o&&o.length!==7){p.adido=o;p.ordem=""}else p.adido=""}
@@ -146,7 +147,7 @@ if(S.people.some(q=>q.id!==id&&q.ordem===v)){alert("Já existe outro efetivo com
 else if(k==="nome"){if(!v.trim()){alert("O nome não pode ficar vazio.");return draw()}p.nome=v.trim()}
 else if(k==="adido")p.adido=v.replace(/\D/g,"");
 else p[k]=v;save()}
-function delP(id){if(!confirm("Remover este efetivo e os seus registos?"))return;S.people=S.people.filter(p=>p.id!==id);S.events.forEach(e=>e.n=e.n.filter(x=>x.p!==id));save();draw()}
+function delP(id){if(!confirm("Remover este efetivo e os seus registos?"))return;{const p=P(id);if(p)(S.log=S.log||[]).push({t:new Date().toISOString(),a:`Efetivo removido: ${p.posto} ${p.nome}`})}S.people=S.people.filter(p=>p.id!==id);S.events.forEach(e=>e.n=e.n.filter(x=>x.p!==id));save();draw()}
 /* Cerimónias */
 let vw=null;
 const fd=d=>d?d.split("-").reverse().join("/"):"";
@@ -156,10 +157,21 @@ function cmpI(a,b){return iR(a)-iR(b)||cmpH(a,b)}
 function vEv(){if(edit)return fEv();if(vw)return vBanda();
 const L=S.events;
 return `<div class="card"><div class="row"><h2 style="flex:3;margin:0">Cerimónias (${L.length})</h2><button class="pri" onclick="newEv()">+ Nova cerimónia</button></div>
-${L.map(e=>{const n=e.n.filter(x=>x.s==="Nomeado").length;return `<div class="pl2 pr"><div class="ln" onclick="vw='${e.id}';draw()" style="cursor:pointer"><div class="tt">${esc(e.nome||e.local||"Sem nome")}</div><div class="mut">${fd(e.data)}${e.local&&e.nome?" · "+esc(e.local):""} · ${n} nomeados${e.montada?"":" · por montar"}</div></div>
-<div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${e.id}')">⋯</button><div class="menu" id="m_${e.id}" hidden><button onclick="edit='${e.id}';draw()">Editar</button><button class="del" onclick="delE('${e.id}')">Remover</button></div></div></div>`}).join("")||`<p class="mut">Ainda sem cerimónias.</p>`}</div>`}
+<div class="row"><input id="cq" type="search" placeholder="Pesquisar: nome, local, pessoa, nota…" value="${esc(cf.q)}" oninput="cf.q=this.value;evR()"></div>
+<div class="row"><input type="date" value="${cf.a}" onchange="cf.a=this.value;evR()"><input type="date" value="${cf.b}" onchange="cf.b=this.value;evR()"><button onclick="cf={q:'',a:'',b:''};draw()">Limpar</button></div>
+<p class="mut" id="evc">${evC()}</p>
+<div id="evl">${evL()}</div></div>
+${(S.log||[]).length?`<div class="card lgd"><details><summary><b>Registo de remoções</b> (${S.log.length})</summary>${[...S.log].reverse().map(l=>`<div class="hl mut"><b>${fdt(l.t)}</b> · ${esc(l.a)}</div>`).join("")}</details></div>`:""}`}
+let cf={q:"",a:"",b:""};
+const nrm=t=>String(t||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+function evM(e){if(cf.a&&e.data<cf.a)return false;if(cf.b&&e.data>cf.b)return false;const q=nrm(cf.q).trim();if(!q)return true;
+const pp=e.n.map(x=>{const p=P(x.p);return p?p.posto+" "+p.nome+" "+p.adido:""}).join(" "),h=nrm([e.nome,e.local,e.tipo,e.notas,fd(e.data),pp].join(" "));return q.split(/\s+/).every(w=>h.includes(w))}
+function evC(){const t=S.events.length,m=S.events.filter(evM).length;return m===t?`${t} cerimónias`:`${m} de ${t} cerimónias`}
+function evR(){$("#evl").innerHTML=evL();$("#evc").textContent=evC()}
+function evL(){const L=S.events.filter(evM);return L.map(e=>{const n=e.n.filter(x=>x.s==="Nomeado").length;return `<div class="pl2 pr"><div class="ln" onclick="vw='${e.id}';draw()" style="cursor:pointer"><div class="tt">${esc(e.nome||e.local||"Sem nome")}</div><div class="mut">${fd(e.data)}${e.local&&e.nome?" · "+esc(e.local):""} · ${n} nomeados${e.montada?"":" · por montar"}</div></div>
+<div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${e.id}')">⋯</button><div class="menu" id="m_${e.id}" hidden><button onclick="edit='${e.id}';draw()">Editar</button><button class="del" onclick="delE('${e.id}')">Remover</button></div></div></div>`}).join("")||`<p class="mut">${S.events.length?"Nenhuma cerimónia corresponde à pesquisa.":"Ainda sem cerimónias."}</p>`}
 function newEv(){const e={id:uid(),data:new Date().toISOString().slice(0,10),nome:"",local:"",tipo:"Cerimónia",viag:null,n:[],montada:false};S.events.push(e);edit=e.id;vw=null;save();draw()}
-function delE(id){if(!confirm("Apagar esta cerimónia?"))return;const e=EV(id);(e&&e.fotos||[]).forEach(f=>{fDel(f.id);delete urls[f.id]});S.events=S.events.filter(e=>e.id!==id);save();draw()}
+function delE(id){if(!confirm("Apagar esta cerimónia?"))return;const e=EV(id);(e&&e.fotos||[]).forEach(f=>{fDel(f.id);delete urls[f.id]});(S.log=S.log||[]).push({t:new Date().toISOString(),a:`Cerimónia apagada: ${e?fd(e.data)+" · "+(e.nome||e.local||"Sem nome")+" ("+e.n.filter(x=>x.s==="Nomeado").length+" nomeados)":id}`});S.events=S.events.filter(e=>e.id!==id);save();draw()}
 
 /* Fotos das listas (IndexedDB, só neste dispositivo) */
 const odb=()=>new Promise((ok,ko)=>{if(!window.indexedDB)return ko("sem IndexedDB");const r=indexedDB.open("nbf",1);r.onupgradeneeded=()=>r.result.createObjectStore("f");r.onsuccess=()=>ok(r.result);r.onerror=()=>ko(r.error)});
@@ -172,9 +184,9 @@ function shrink(file){return new Promise((ok,ko)=>{const u=URL.createObjectURL(f
 async function addFoto(inp){const e=EV(edit);if(!e)return;const fs=[...inp.files];inp.value="";if(!fs.length)return;
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(x){}
 const st=$("#fst");let bad=0;
-for(const f of fs){try{if(st)st.textContent="A guardar foto…";const v=await shrink(f),id=uid();await fPut(id,v);(e.fotos=e.fotos||[]).push({id,t:new Date().toISOString().slice(0,10)});save()}catch(x){bad++}}
+for(const f of fs){try{if(st)st.textContent="A guardar foto…";const v=await shrink(f),id=uid();await fPut(id,v);(e.fotos=e.fotos||[]).push({id,t:new Date().toISOString().slice(0,10)});lg(e,"Foto da lista adicionada");save()}catch(x){bad++}}
 draw();if(bad)alert("Não foi possível guardar "+bad+" foto(s). Tente de novo.")}
-async function delFoto(id){if(!confirm("Remover esta foto?"))return;const e=EV(edit);e.fotos=(e.fotos||[]).filter(f=>f.id!==id);if(urls[id]){URL.revokeObjectURL(urls[id]);delete urls[id]}await fDel(id);save();draw()}
+async function delFoto(id){if(!confirm("Remover esta foto?"))return;const e=EV(edit);e.fotos=(e.fotos||[]).filter(f=>f.id!==id);if(urls[id]){URL.revokeObjectURL(urls[id]);delete urls[id]}await fDel(id);lg(e,"Foto da lista removida");save();draw()}
 async function verFoto(id){const u=await fUrl(id);if(!u)return alert("Foto indisponível neste dispositivo.");let o=$("#vwr");if(!o){o=document.createElement("div");o.id="vwr";o.onclick=()=>o.hidden=true;document.body.appendChild(o)}
 o.innerHTML=`<img src="${u}" alt="Lista original"><button onclick="event.stopPropagation();$('#vwr').hidden=true" aria-label="Fechar">✕</button>`;o.hidden=false}
 const thumbs=(e,rm)=>(e.fotos||[]).map(f=>`<span class="th"><img data-f="${f.id}" alt="" onclick="verFoto('${f.id}')">${rm?`<button class="del" onclick="delFoto('${f.id}')" aria-label="Remover foto">✕</button>`:""}</span>`).join("");
@@ -205,7 +217,7 @@ ${rows||`<p class="mut">Adicione primeiro os efetivos no separador Efetivos.</p>
 <div class="row" style="margin-top:12px"><button class="pri" onclick="montar()">Montar Banda</button><button onclick="edit=null;draw()">Voltar</button></div></div>`}
 const fmtV=m=>m<60?m+"min":Math.floor(m/60)+"h "+String(m%60).padStart(2,"0")+"min";
 function parseV(t){t=String(t).trim().toLowerCase();let m=t.match(/^(\d+)\s*h\s*(\d{1,2})?/);if(m)return +m[1]*60+(+m[2]||0);m=t.match(/^(\d+)\s*(min|m)?$/);return m?+m[1]:null}
-function setV(v){const e=EV(edit);if(!v.trim()){e.viag=null;e.viagInfo="";save();return}const m=parseV(v);if(m==null){alert("Escreva a duração, por exemplo 1h 05min ou 65.");$("#vg").value=e.viag!=null?fmtV(e.viag):"";return}e.viag=m;e.viagInfo="Valor introduzido à mão.";$("#vg").value=fmtV(m);$("#vst").textContent=e.viagInfo;save()}
+function setV(v){const e=EV(edit);if(!v.trim()){e.viag=null;e.viagInfo="";save();return}const m=parseV(v);if(m==null){alert("Escreva a duração, por exemplo 1h 05min ou 65.");$("#vg").value=e.viag!=null?fmtV(e.viag):"";return}if(m!==e.viag)lg(e,"Viagem: "+(e.viag!=null?fmtV(e.viag):"–")+" → "+fmtV(m));e.viag=m;e.viagInfo="Valor introduzido à mão.";$("#vg").value=fmtV(m);$("#vst").textContent=e.viagInfo;save()}
 async function geo(q){const r=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=pt&q="+encodeURIComponent(q));const j=await r.json();return j[0]?{lat:+j[0].lat,lon:+j[0].lon}:null}
 async function origem(){try{const c=JSON.parse(localStorage.getItem("nbo"));if(c&&c.lat)return c}catch(e){}
 try{const o=await geo("Calçada da Ajuda, Lisboa");if(o){try{localStorage.setItem("nbo",JSON.stringify(o))}catch(e){}return o}}catch(e){}
@@ -217,15 +229,18 @@ try{const o=await origem(),d=await geo(q);if(!d)throw"local";
 const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${o.lon},${o.lat};${d.lon},${d.lat}?overview=false`),j=await r.json();
 if(!j.routes||!j.routes[0])throw"rota";
 if(e.local.trim()!==q)return;
-e.viag=Math.round(j.routes[0].duration/60);const km=Math.round(j.routes[0].distance/1000);
+{const nv=Math.round(j.routes[0].duration/60);if(nv!==e.viag)lg(e,"Viagem: "+(e.viag!=null?fmtV(e.viag):"–")+" → "+fmtV(nv));e.viag=nv}const km=Math.round(j.routes[0].distance/1000);
 e.viagInfo=`${km} km desde a Calçada da Ajuda · estimativa sem trânsito. Pode corrigir à mão.`;save();
 if(edit===id&&$("#vg")){$("#vg").value=fmtV(e.viag);st().textContent=e.viagInfo}}
 catch(err){if(edit===id&&st())st().textContent=err==="local"?"Não encontrei esse local. Tente um nome mais completo (ex.: Cartaxo, Santarém) ou escreva a viagem à mão.":"Não foi possível calcular a viagem (sem ligação?). Escreva-a à mão."}}
-function up(k,v){const e=EV(edit);if(!e)return;e[k]=v;save()}
-function cyc(id){const e=EV(edit),x=e.n.find(q=>q.p===id);
+const lg=(e,a)=>{if(e&&e.montada)(e.log=e.log||[]).push({t:new Date().toISOString(),a})};
+const fdt=t=>{const d=new Date(t);return d.toLocaleDateString("pt-PT")+" "+d.toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"})};
+const LAB={nome:"Nome",local:"Local",data:"Data",tipo:"Tipo"};
+function up(k,v){const e=EV(edit);if(!e)return;const o=e[k];e[k]=v;if(o!==v&&(o||v)){if(k==="notas")lg(e,"Notas alteradas");else if(LAB[k]){const f=k==="data"?fd:(x=>x||"–");lg(e,`${LAB[k]}: ${f(o)} → ${f(v)}`)}}save()}
+function cyc(id){const e=EV(edit),x=e.n.find(q=>q.p===id),o0=x?x.s:"";
 if(!x)e.n.push({p:id,s:"Nomeado"});else if(x.s==="Nomeado")x.s="Reserva";else e.n=e.n.filter(q=>q.p!==id);
-const s=(e.n.find(q=>q.p===id)||{}).s||"",[c,l]=stl(s);$("#r_"+id).className="pk "+c;$("#b_"+id).textContent=l;$("#cnt").innerHTML="<b>"+cnt(e)+"</b>";save()}
-function montar(){const e=EV(edit);if(!e.n.some(x=>x.s==="Nomeado"))return alert("Selecione pelo menos uma pessoa como Nomeado.");e.montada=true;save();vw=e.id;edit=null;draw()}
+const s=(e.n.find(q=>q.p===id)||{}).s||"",[c,l]=stl(s);{const p=P(id);lg(e,`${p?p.posto+" "+p.nome:"?"}: ${o0||"fora"} → ${s||"fora"}`)}$("#r_"+id).className="pk "+c;$("#b_"+id).textContent=l;$("#cnt").innerHTML="<b>"+cnt(e)+"</b>";save()}
+function montar(){const e=EV(edit);if(!e.n.some(x=>x.s==="Nomeado"))return alert("Selecione pelo menos uma pessoa como Nomeado.");{const nv=!e.montada;e.montada=true;if(nv)lg(e,`Banda montada: ${e.n.filter(x=>x.s==="Nomeado").length} nomeados, ${e.n.filter(x=>x.s==="Reserva").length} em reserva`)}save();vw=e.id;edit=null;draw()}
 function tgl(){const l=$("#lista"),h=l.hidden;l.hidden=!h;$("#eye").setAttribute("aria-pressed",String(h));$("#eye").style.opacity=h?"1":".6"}
 const EYE='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 function vBanda(){const e=EV(vw);if(!e){vw=null;return vEv()}
@@ -237,6 +252,7 @@ return `<div class="card"><div class="row" style="flex-wrap:nowrap;align-items:f
 <button id="eye" class="dots" style="flex:0 0 auto;min-width:0;padding:6px 10px" aria-label="Ver nomeações" aria-pressed="false" title="Ver nomeações" onclick="tgl()">${EYE}</button></div>
 <div style="margin-top:8px">${kv("Tipo",esc(e.tipo)||"–")}${kv("Local",esc(e.local)||"–")}${kv("Data",fd(e.data))}${kv("Viagem (ida)",e.viag!=null?fmtV(e.viag):"–")}${kv("Total nomeados",N.length+(R.length?` <span class="mut">(+${R.length} em reserva)</span>`:""))}</div>
 ${e.notas?`<div class="ih">Notas</div><div style="white-space:pre-wrap">${esc(e.notas)}</div>`:""}${(e.fotos||[]).length?`<div class="ih">Lista original</div><div>${thumbs(e,false)}</div>`:""}
+${(e.log||[]).length?`<details class="lgd" style="margin-top:12px"><summary><b>Registo de alterações</b> (${e.log.length})</summary>${[...e.log].reverse().map(l=>`<div class="hl mut"><b>${fdt(l.t)}</b> · ${esc(l.a)}</div>`).join("")}</details>`:""}
 <div id="lista" hidden style="margin-top:12px">${body||`<p class="mut">Sem nomeados.</p>`}
 ${R.length?`<div class="ih">Reserva</div>${R.map(p=>`<div class="pl2">${ln(p)} <span class="mut">(${esc(p.inst||"–")})</span></div>`).join("")}`:""}</div>
 <div class="row" style="margin-top:14px"><button class="pri" onclick="vw=null;draw()">Voltar</button></div></div>`}
@@ -353,6 +369,7 @@ const NN=get("Nomeado"),RS=get("Reserva"),items=[];let last=null;NN.forEach(p=>{
 if(RS.length){items.push({h:"Reserva"});RS.forEach(p=>items.push({t:`${ln(p)} (${p.inst||"–"})`}))}
 if(!items.length)items.push({t:fl.n?"Sem nomeados neste naipe.":"Sem nomeados."});
 const nl=e.notas?wrapT("Nota: "+e.notas.replace(/\s+/g," "),CW-10,8.5,0):[];
+if(!fl.n)(e.log||[]).forEach(l=>wrapT("Alteração "+fdt(l.t)+": "+l.a.replace(/→/g,"->"),CW-10,8.5,0).forEach(x=>nl.push(x)));
 const ex=nl.length?nl.length*11+3:0;if((y+33+ex+40>BOT||!sim(items,y+33+ex,BOT))&&y>M+1)np();
 R(M,y,CW,17,[.9,.94,.92]);
 T(M+5,y+12,`${fd(e.data)} · ${e.nome||e.local||"Sem nome"}`,9.5,1,BLK,CW-10);y+=17;
@@ -378,6 +395,36 @@ const tag=x?"_"+nLbl(x).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(
 try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:nm});return}}catch(e){if(e&&e.name==="AbortError")return}
 const url=URL.createObjectURL(f),a=document.createElement("a");a.href=url;a.download=nm;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
 
+
+/* Evolução no tempo */
+const MES=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+const f1=v=>Number.isInteger(v)?String(v):v.toFixed(1).replace(".",",");
+function tipE(id,t){const el=$("#"+id);if(el)el.textContent=t}
+function bars(vals,labs,id,unit){const W=340,H=150,B=20,T=16,n=vals.length,mx=Math.max(...vals,1),bw=W/n;let g=`<svg class="cht" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de barras: ${labs.map((l,i)=>l+" "+f1(vals[i])).join(", ")}">`;
+g+=`<line class="bs" x1="0" x2="${W}" y1="${H-B}" y2="${H-B}"/>`;
+vals.forEach((v,i)=>{const h=(H-B-T)*v/mx,w=Math.min(26,bw*.7),x=i*bw+(bw-w)/2,y=H-B-h,r=Math.min(4,h,w/2),tx=`${labs[i]}: ${f1(v)} ${unit}`;
+if(v>0){g+=`<path d="M${x},${H-B}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${H-B}Z" fill="var(--ac)"/><text class="vl" x="${x+w/2}" y="${y-3}" text-anchor="middle">${f1(v)}</text>`}
+g+=`<text x="${x+w/2}" y="${H-6}" text-anchor="middle">${labs[i]}</text><rect x="${i*bw}" y="0" width="${bw}" height="${H}" fill="transparent" onclick="tipE('${id}','${tx}')"/>`});
+return g+`</svg><p class="mut" id="${id}">Toque numa barra para ver o valor.</p>`}
+function vEc(){const ys=[...new Set(S.events.map(e=>(e.data||"").slice(0,4)).filter(Boolean))].sort().reverse(),Y=ys.includes(fl.ey)?fl.ey:(ys[0]||String(new Date().getFullYear())),NP=naipes(),nv=NP.includes(fl.en)?fl.en:"";
+const sel=`<div class="card"><div class="row">${fld("Ano","",`<select onchange="fl.ey=this.value;draw()">${(ys.length?ys:[Y]).map(y=>`<option ${y===Y?"selected":""}>${y}</option>`).join("")}</select>`)}${fld("Naipe","",`<select onchange="fl.en=this.value;draw()"><option value="">Geral (toda a banda)</option>${NP.map(v=>`<option value="${esc(v)}" ${nv===v?"selected":""}>${esc(nLbl(v))}</option>`).join("")}</select>`)}</div>
+<p class="mut">Contam as nomeações que constam nas listas. Os pontos seguem as regras do separador Equilíbrio (${HV()} h por ponto).</p></div>`;
+if(!S.events.length)return sel+`<div class="card"><p class="mut">Ainda sem cerimónias registadas.</p></div>`;
+const pp=S.people.filter(p=>!nv||(nv==="__none"?!p.inst:nOf(p.inst)===nv)).sort(cmpI),ids=new Set(pp.map(p=>p.id));
+const stat=e=>{const k=e.n.filter(x=>x.s==="Nomeado"&&ids.has(x.p)).length;return{k,pt:k*peso(e)}};
+const mc=Array(12).fill(0),mp=Array(12).fill(0),mn=Array(12).fill(0);
+S.events.filter(e=>(e.data||"").slice(0,4)===Y).forEach(e=>{const m=+e.data.slice(5,7)-1,q=stat(e);if(q.k&&m>=0){mc[m]++;mn[m]+=q.k;mp[m]+=q.pt}});
+const yc=ys.slice().reverse().map(y=>{let c=0,p=0;S.events.filter(e=>(e.data||"").slice(0,4)===y).forEach(e=>{const q=stat(e);if(q.k){c++;p+=q.pt}});return{y,c,p}});
+let h=sel+`<div class="card"><h2>Cerimónias por mês · ${Y}</h2>${bars(mc,MES,"t1","cerimónias")}</div>
+<div class="card"><h2>Esforço por mês · ${Y}</h2><p class="mut" style="margin-top:0">Pontos de esforço somados${nv?" no naipe":" em toda a banda"}.</p>${bars(mp.map(v=>Math.round(v*10)/10),MES,"t2","pontos")}</div>`;
+if(yc.length>1)h+=`<div class="card"><h2>Esforço por ano</h2>${bars(yc.map(q=>Math.round(q.p*10)/10),yc.map(q=>q.y),"t3","pontos")}</div>`;
+if(nv){const grid=pp.map(p=>{const c=Array(12).fill(0);S.events.forEach(e=>{if((e.data||"").slice(0,4)===Y&&e.n.some(x=>x.p===p.id&&x.s==="Nomeado")){const m=+e.data.slice(5,7)-1;if(m>=0)c[m]++}});return{p,c}}),mx=Math.max(1,...grid.flatMap(g=>g.c));
+h+=`<div class="card"><h2>Mapa por pessoa · ${Y}</h2><p class="mut" style="margin-top:0">Nomeações por mês. Quanto mais escuro, mais nomeações.</p><div class="hmw"><table class="hmt"><tr><th></th>${MES.map(m=>`<th>${m[0]}</th>`).join("")}</tr>${grid.map(g=>`<tr><td class="nm">${esc(g.p.posto)} ${esc(g.p.nome)}</td>${g.c.map((v,i)=>`<td class="c" title="${MES[i]}: ${v}">${v?`<i style="opacity:${(.25+.75*v/mx).toFixed(2)}"></i><b>${v}</b>`:""}</td>`).join("")}</tr>`).join("")||`<tr><td class="mut">Sem efetivos.</td></tr>`}</table></div></div>`}
+else h+=`<div class="card"><p class="mut">Escolha um naipe para ver o mapa de nomeações por pessoa.</p></div>`;
+const sa=fl.a,sb=fl.b;fl.a=Y+"-01-01";fl.b=Y+"-12-31";let bal="";
+try{if(nv){const d=calcEq(nv);bal=`<p class="mut" style="margin-top:0">${d.ev.length} cerimónias no ano · ${d.r.reduce((t,x)=>t+x.f,0)} nomeações · média de ${f1(Math.round(d.avg*10)/10)} pontos por pessoa.</p>`+(d.r.map(x=>{const t=stT(x,d.avg);return `<div class="pl2"><div class="pr"><div class="ln"><div class="tt">${esc(x.p.posto)} ${esc(x.p.nome)}</div></div>${t?`<span class="tag ${t==="acima"?"hi":t==="abaixo"?"lo":"ok"}">${t}</span>`:""}</div><div class="mut">${x.f} ${x.f===1?"nomeação":"nomeações"} · ${f1(Math.round(x.pt*10)/10)} pts · ${d.tot?(x.pt/d.tot*100).toFixed(1):"0.0"}% do esforço · reserva ${x.rs}</div></div>`}).join("")||`<p class="mut">Sem dados.</p>`)}
+else bal=`<p class="mut" style="margin-top:0">Resumo por naipe. Para ver cada pessoa, escolha um naipe.</p>`+NP.map(v=>{const d=calcEq(v),ac=d.r.filter(x=>stT(x,d.avg)==="acima").length,ab=d.r.filter(x=>stT(x,d.avg)==="abaixo").length,tg=!d.tot?`<span class="tag">sem nomeações</span>`:(ac||ab)?`${ac?`<span class="tag hi">${ac} acima</span> `:""}${ab?`<span class="tag lo">${ab} abaixo</span>`:""}`:`<span class="tag ok">equilibrado</span>`;return `<div class="pl2"><div class="tt">${esc(nLbl(v))}</div><div class="mut">${d.pp.length} efetivo(s) · ${d.r.reduce((t,x)=>t+x.f,0)} nomeações · média ${f1(Math.round(d.avg*10)/10)} pts</div><div style="margin-top:4px">${tg}</div></div>`}).join("")}finally{fl.a=sa;fl.b=sb}
+return h+`<div class="card"><h2>Balanço de ${Y}</h2>${bal}</div>`}
 /* Backup */
 function vBk(){return `<div class="card"><h2>Cópia de segurança</h2><p class="mut">Os dados ficam só neste dispositivo e navegador. Copie o texto abaixo e guarde-o num local seguro. Para restaurar, cole-o e carregue em Restaurar.</p>
 <textarea id="bk">${esc(JSON.stringify(S))}</textarea>
