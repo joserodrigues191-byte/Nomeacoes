@@ -86,6 +86,7 @@ main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 .hb{margin-top:8px;min-height:48px;background:var(--ac);color:#04271d;font-weight:700;font-size:16px;border:0;border-radius:12px}
 .lkb{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:52px;border:0;background:transparent;color:var(--ok);font-size:16px;font-weight:600;padding:0 4px;border-radius:0}
 .nb{width:100%;min-height:50px;margin-top:10px;font-size:16px;font-weight:700;border-radius:12px;color:#04271d}
+.nd{border-top:1px solid var(--bd);padding:6px 0}.nd:first-of-type{border-top:0}.nd summary{cursor:pointer;min-height:40px;display:flex;align-items:center;gap:8px;list-style:none}.nd summary::-webkit-details-marker{display:none}.nd summary:before{content:"▾";color:var(--mut)}.nd:not([open]) summary:before{content:"▸"}
 </style></head><body><main>
 
 <nav id="nav"></nav>
@@ -142,8 +143,10 @@ function vEf(){const L=[...S.people].sort(cmpH),v=x=>esc(x||"–");
 return `<div class="card"><h2>Adicionar efetivo</h2>${frm("n",{posto:lastAdd.posto,inst:lastAdd.inst})}
 <div class="row"><button class="pri" onclick="addP()">Adicionar</button></div></div>
 <div class="card"><h2>Cadastro (${L.length})</h2>
-${L.map(p=>p.id===edId?`<div class="pl2">${frm("e",p)}<div class="row"><button class="pri" onclick="saveE()">Guardar</button><button onclick="edId=null;draw()">Cancelar</button></div></div>`
-:`<div class="pl2 pr"><span class="ln">${v(p.posto)}; ${v(p.adido)}; ${v(p.ordem)}; ${v(p.nome)}; ${v(p.inst)}</span><div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${p.id}')">⋯</button><div class="menu" id="m_${p.id}" hidden><button onclick="edId='${p.id}';draw()">Editar</button><button class="del" onclick="delP('${p.id}')">Remover</button></div></div></div>`).join("")||`<p class="mut">Ainda sem efetivos.</p>`}</div>`}
+${naipes().map(n=>{const G=L.filter(p=>n==="__none"?!p.inst:nOf(p.inst)===n);if(!G.length)return"";
+return `<details class="nd" ${(fl.cc&&fl.cc[n])||G.some(p=>p.id===edId)?"open":""} ontoggle="(fl.cc=fl.cc||{})['${esc(n)}']=this.open"><summary><span class="tt">${esc(nLbl(n))}</span> <span class="mut">${G.length}</span></summary>
+${G.map(p=>p.id===edId?`<div class="pl2">${frm("e",p)}<div class="row"><button class="pri" onclick="saveE()">Guardar</button><button onclick="edId=null;draw()">Cancelar</button></div></div>`
+:`<div class="pl2 pr"><span class="ln">${v(p.posto)}; ${v(p.adido)}; ${v(p.ordem)}; ${v(p.nome)}${p.inst&&p.inst!==n?"; "+v(p.inst):""}</span><div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${p.id}')">⋯</button><div class="menu" id="m_${p.id}" hidden><button onclick="edId='${p.id}';draw()">Editar</button><button class="del" onclick="delP('${p.id}')">Remover</button></div></div></div>`).join("")}</details>`}).join("")||`<p class="mut">Ainda sem efetivos.</p>`}</div>`}
 function cm(){document.querySelectorAll(".menu").forEach(m=>m.hidden=true)}
 function tm(e,id){e.stopPropagation();const m=document.getElementById("m_"+id),was=!m.hidden;cm();m.hidden=was}
 document.addEventListener("click",cm);
@@ -156,7 +159,7 @@ function addP(){const n=$("#nN").value.trim(),o=$("#nO").value.trim(),a=$("#nA")
 if(!/^\d{7}$/.test(o))return alert("O Nº Ordem tem de ter exatamente 7 algarismos.");
 if(!n)return alert("Escreva o nome.");
 if(S.people.some(q=>q.ordem===o))return alert("Já existe um efetivo com este Nº Ordem.");
-S.people.push({id:uid(),posto:po,adido:a,ordem:o,nome:n,inst:i});lastAdd={posto:po,inst:i};save();draw()}
+S.people.push({id:uid(),posto:po,adido:a,ordem:o,nome:n,inst:i});lastAdd={posto:po,inst:i};(fl.cc=fl.cc||{})[i?nOf(i):"__none"]=true;save();draw()}
 function edP(id,k,v){const p=P(id);if(!p)return;
 if(k==="ordem"){v=v.replace(/\D/g,"");
 if(!/^\d{7}$/.test(v)){alert("O Nº Ordem tem de ter exatamente 7 algarismos.");return draw()}
