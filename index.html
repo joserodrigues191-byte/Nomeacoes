@@ -18,7 +18,7 @@ h1{font-size:20px;margin:4px 0 12px}h2{font-size:16px;margin:0 0 8px}
 nav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 nav button{flex:1;min-width:110px}
 button,select,input,textarea{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 10px}
-button{cursor:pointer}button.on,button.pri{background:var(--ac);color:var(--onac,#fff);border-color:var(--ac)}
+button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}button.on,button.pri{background:var(--ac);color:var(--onac,#fff);border-color:var(--ac)}
 button.del{color:var(--hi)}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
@@ -86,7 +86,7 @@ Object.assign(LEG,{"CCHEFE":"CCH","GUARDAPROVISÓRIO":"GPROV","GUARDAPRINCIPAL":
 const INSTR=["Oboé","Flauta","Requinta","Clarinete","Fagote","Sax. Alto","Sax. Tenor","Trompa","Trompete","Trombone","Bombardino","Tuba","Percussão"];
 let mn=null,ed=null;
 let lastAdd={posto:"GUARDA",inst:""};
-let S={people:[],events:[]},tab="home",edit=null,fl={a:"",b:"",n:"",x:""};
+let S={people:[],events:[]},tab="home",edit=null,fl={a:"",b:"",n:"",x:"",sh:0,sp:0,so:false};
 const mig=()=>{S.events.forEach(e=>e.n.forEach(x=>{if(x.s!=="Reserva")x.s="Nomeado"}));S.people.forEach(p=>{const k=String(p.posto||"").toUpperCase().replace(/[\s.\-]/g,"");if(LEG[k])p.posto=LEG[k];fixP(p)})};
 try{const r=localStorage.getItem("nb1");if(r){S=JSON.parse(r);mig()}}catch(e){}
 const save=()=>{try{localStorage.setItem("nb1",JSON.stringify(S))}catch(e){}};
@@ -213,19 +213,22 @@ return `<div class="card"><div class="row" style="flex-wrap:nowrap;align-items:f
 <div id="lista" hidden style="margin-top:12px">${body||`<p class="mut">Sem nomeados.</p>`}
 ${R.length?`<div class="ih">Reserva</div>${R.map(p=>`<div class="pl2">${ln(p)} <span class="mut">(${esc(p.inst||"–")})</span></div>`).join("")}`:""}</div>
 <div class="row" style="margin-top:14px"><button class="pri" onclick="vw=null;draw()">Voltar</button></div></div>`}
-const HV=()=>{const h=S.cfg&&parseFloat(S.cfg.h);return h>0?h:4};
-const peso=e=>1+2*(e.viag||0)/60/HV();
+const HV=()=>{const h=S.cfg&&parseFloat(S.cfg.h);return h>0?h:2};
+const TH=()=>{const p=S.cfg&&parseFloat(S.cfg.p);return p>0&&p<=100?p:25};
+const peso=(e,h)=>1+2*(e.viag||0)/60/(h||HV());
+function setP(v){const p=parseFloat(String(v).replace(",","."));if(!(p>0&&p<=100)){alert("Indique uma percentagem entre 1 e 100.");return draw()}S.cfg=S.cfg||{};S.cfg.p=p;save();draw()}
+function applySim(){const h=fl.sh>0?fl.sh:HV(),p=fl.sp>0&&fl.sp<=100?fl.sp:TH();if(!confirm("Aplicar "+h+" hora(s) por ponto e limite de alertas de "+p+"%? Isto recalcula todo o histórico e os PDFs seguintes."))return;S.cfg=S.cfg||{};S.cfg.h=h;S.cfg.p=p;fl.sh=0;fl.sp=0;save();draw()}
 function setH(v){const h=parseFloat(String(v).replace(",","."));if(!(h>0)){alert("Indique um número de horas maior que zero.");return draw()}S.cfg=S.cfg||{};S.cfg.h=h;save();draw()}
 const nOf=i=>i==="Requinta"?"Clarinete":(i||"");
 function naipes(){const st=new Set(S.people.map(p=>nOf(p.inst))),a=INSTR.filter(i=>st.has(i));st.forEach(i=>{if(i&&!INSTR.includes(i))a.push(i)});if(st.has(""))a.push("__none");return a}
 const nLbl=v=>v==="__none"?"Sem instrumento":v;
-function calcEq(n){if(n===undefined)n=fl.n;if(n&&!naipes().includes(n))n="";
+function calcEq(n,o){if(n===undefined)n=fl.n;const hh=o&&o.h>0?o.h:HV();if(n&&!naipes().includes(n))n="";
 const pp=S.people.filter(p=>!n||(n==="__none"?!p.inst:nOf(p.inst)===n)),ids=new Set(pp.map(p=>p.id));
 const ev=S.events.filter(e=>(!fl.a||e.data>=fl.a)&&(!fl.b||e.data<=fl.b)),sv=ev.filter(e=>e.viag==null&&e.n.some(x=>x.s==="Nomeado"&&ids.has(x.p))).length;
-const r=pp.map(p=>{let f=0,rs=0,vg=0,pt=0;ev.forEach(e=>{const x=e.n.find(n=>n.p===p.id);if(!x)return;if(x.s==="Nomeado"){f++;vg+=2*(e.viag||0);pt+=peso(e)}else if(x.s==="Reserva")rs++});return{p,f,rs,vg,pt}}).sort((a,b)=>b.pt-a.pt||b.f-a.f);
+const r=pp.map(p=>{let f=0,rs=0,vg=0,pt=0;ev.forEach(e=>{const x=e.n.find(n=>n.p===p.id);if(!x)return;if(x.s==="Nomeado"){f++;vg+=2*(e.viag||0);pt+=peso(e,hh)}else if(x.s==="Reserva")rs++});return{p,f,rs,vg,pt}}).sort((a,b)=>b.pt-a.pt||b.f-a.f);
 const tot=r.reduce((s,x)=>s+x.pt,0),avg=r.length?tot/r.length:0,mx=Math.max(1e-9,...r.map(x=>x.pt)),fair=r.length?100/r.length:0;
 return{ev,sv,r,tot,avg,mx,fair,pp}}
-const stT=(x,avg)=>{if(!avg)return"";const t=Math.max(.5,avg*.25);return x.pt>avg+t?"acima":x.pt<avg-t?"abaixo":"na média"};
+const stT=(x,avg,p)=>{if(!avg)return"";const t=Math.max(.5,avg*(p>0?p:TH())/100);return x.pt>avg+t?"acima":x.pt<avg-t?"abaixo":"na média"};
 function openN(i){fl.n=naipes()[i]||"";draw();window.scrollTo(0,0)}
 function vEq(){if(fl.n&&!naipes().includes(fl.n))fl.n="";
 const d=calcEq(),{ev,sv,r,tot,avg,mx,fair}=d,inN=!!fl.n;
@@ -238,21 +241,31 @@ const per=`<div class="card"><h2>Período</h2>${dates}
 <p class="mut">${ev.length} cerimónias no período. Contam as nomeações que constam nas listas, não a presença efetiva. O PDF contém nomes e números de ordem: trate-o como informação sensível.</p></div>`;
 const perD=`<div class="card"><h2>Período</h2>${dates}<p class="mut">${ev.length} cerimónias no período. Contam as nomeações que constam nas listas, não a presença efetiva.</p></div>`;
 const expl=`<div class="card"><h2>Como se calcula o esforço</h2>
-<p class="mut">Cada nomeação vale 1 ponto, mais um agravante pela viagem, contando ida e volta. A cada <input type="number" step="0.5" min="0.5" inputmode="decimal" value="${HV()}" style="width:70px;padding:3px 6px" onchange="setH(this.value)"> horas de viagem (ida e volta) soma-se mais 1 ponto. Exemplo: com ${HV()} horas, uma cerimónia com 20 min de ida vale ${(1+2*20/60/HV()).toFixed(2)} pontos e uma com 5 h de ida vale ${(1+2*300/60/HV()).toFixed(2)}. A reserva não conta.</p>
+<p class="mut">Cada nomeação vale 1 ponto, mais um agravante pela viagem, contando ida e volta. A cada <input type="number" step="0.5" min="0.5" inputmode="decimal" value="${HV()}" style="width:70px;padding:3px 6px" onchange="setH(this.value)"> horas de viagem (ida e volta) soma-se mais 1 ponto. Exemplo: com ${HV()} ${HV()===1?"hora":"horas"}, uma cerimónia com 20 min de ida vale ${(1+2*20/60/HV()).toFixed(2)} pontos e uma com 5 h de ida vale ${(1+2*300/60/HV()).toFixed(2)}. A reserva não conta. Os alertas “acima” e “abaixo” aparecem quando os pontos de alguém se afastam mais de <input type="number" step="1" min="1" max="100" inputmode="numeric" value="${TH()}" style="width:64px;padding:3px 6px" onchange="setP(this.value)"> % da média (com uma folga mínima de 0,5 pontos).</p>
 ${sv?`<p class="mut"><b>${sv}</b> cerimónia(s) sem viagem preenchida contam só 1 ponto.</p>`:""}</div>`;
+const sH=fl.sh>0?fl.sh:HV(),sP=fl.sp>0&&fl.sp<=100?fl.sp:TH(),oS={h:sH,p:sP},same=sH===HV()&&sP===TH();
+const sumT=(q,p)=>{if(!q.tot)return"sem nomeações";const ac=q.r.filter(x=>stT(x,q.avg,p)==="acima").length,ab=q.r.filter(x=>stT(x,q.avg,p)==="abaixo").length;return ac||ab?[ac?ac+" acima":"",ab?ab+" abaixo":""].filter(Boolean).join(" · "):"equilibrado"};
+let simBody="";
+if(!same){if(!inN){simBody=naipes().map(v=>{const a=calcEq(v),b=calcEq(v,oS),ta=sumT(a),tb=sumT(b,sP);return `<div class="pl2"><div class="tt">${esc(nLbl(v))}</div><div class="mut">Agora: ${ta}</div><div${ta!==tb?' style="font-weight:600"':""}>Simulação: ${tb}${ta!==tb?" (muda)":""}</div></div>`}).join("")||`<p class="mut">Sem efetivos.</p>`}
+else{const b=calcEq(fl.n,oS),mb=new Map(b.r.map(x=>[x.p.id,x]));simBody=r.map(x=>{const y=mb.get(x.p.id)||x,pa=tot?(x.pt/tot*100).toFixed(1):"0.0",pb=b.tot?(y.pt/b.tot*100).toFixed(1):"0.0",ea=stT(x,avg)||"–",eb=stT(y,b.avg,sP)||"–";return `<div class="pl2"><div class="tt">${esc(x.p.posto)} ${esc(x.p.nome)}</div><div class="mut">Agora: ${pa}% · ${ea}</div><div${ea!==eb?' style="font-weight:600"':""}>Simulação: ${pb}% · ${eb}${ea!==eb?" (muda)":""}</div></div>`}).join("")||`<p class="mut">Sem dados.</p>`}}
+const sim=`<div class="card"><details ${fl.so?"open":""} ontoggle="fl.so=this.open"><summary><b>Simular outros valores</b></summary>
+<p class="mut">Experimente outros valores sem alterar nada. O que está guardado só muda se carregar em “Aplicar estes valores”.</p>
+<div class="g3" style="grid-template-columns:1fr 1fr">${fld("Horas por ponto","",`<input type="number" step="0.5" min="0.5" inputmode="decimal" value="${sH}" onchange="fl.sh=parseFloat(String(this.value).replace(',','.'))||0;draw()">`)}${fld("Limite dos alertas (%)","",`<input type="number" step="1" min="1" max="100" inputmode="numeric" value="${sP}" onchange="fl.sp=parseFloat(String(this.value).replace(',','.'))||0;draw()">`)}</div>
+${same?`<p class="mut">Os valores simulados são iguais aos atuais (${HV()} h por ponto e ${TH()}%). Altere um deles para ver a diferença.</p>`:simBody}
+<div class="row" style="margin-top:8px"><button class="pri" onclick="applySim()" ${same?"disabled":""}>Aplicar estes valores</button><button onclick="fl.sh=0;fl.sp=0;draw()">Repor</button></div></details></div>`;
 if(!inN){
 const NP=naipes();
 const rows=NP.map((v,i)=>{const q=calcEq(v),ac=q.r.filter(x=>stT(x,q.avg)==="acima").length,ab=q.r.filter(x=>stT(x,q.avg)==="abaixo").length,nm=q.r.reduce((t,x)=>t+x.f,0);
 const tg=!q.tot?`<span class="tag">sem nomeações</span>`:(ac||ab)?`${ac?`<span class="tag hi">${ac} acima</span> `:""}${ab?`<span class="tag lo">${ab} abaixo</span>`:""}`:`<span class="tag ok">equilibrado</span>`;
 return `<div class="pl2 pr" onclick="openN(${i})" style="cursor:pointer"><div class="ln"><div class="tt">${esc(nLbl(v))}</div><div class="mut">${q.pp.length} efetivo(s) · ${nm} nomeações · média ${q.avg.toFixed(1)} pts</div><div style="margin-top:5px">${tg}</div></div><span class="mut" style="font-size:24px">›</span></div>`}).join("");
-return per+`<div class="card"><h2>Naipes</h2><p class="mut">Toque num naipe para ver o esforço de cada pessoa.</p>${rows||`<p class="mut">Ainda sem efetivos. Adicione-os no separador Efetivos.</p>`}</div>`+expl}
+return per+`<div class="card"><h2>Naipes</h2><p class="mut">Toque num naipe para ver o esforço de cada pessoa.</p>${rows||`<p class="mut">Ainda sem efetivos. Adicione-os no separador Efetivos.</p>`}</div>`+expl+sim}
 return `<div class="card"><div class="row" style="flex-wrap:nowrap;align-items:center;margin:0"><button onclick="fl.n='';draw();window.scrollTo(0,0)" style="flex:0 0 auto;min-width:0">‹ Naipes</button><h2 style="flex:1;margin:0">${esc(nLbl(fl.n))}</h2></div>
 <p class="mut" style="margin-bottom:0">${d.pp.length} efetivo(s). As percentagens de esforço são calculadas só dentro do naipe.</p></div>`+perD+
 `<div class="card"><h2>Pessoas</h2>
 ${r.map(x=>`<div class="pl2"><div class="pr"><div class="ln"><div class="tt">${esc(x.p.posto)} ${esc(x.p.nome)}</div></div>${fl2(x)}</div>
 <div class="bar" style="margin:7px 0 5px"><i style="width:${x.pt/mx*100}%"></i></div>
 <div class="mut">${x.f} ${x.f===1?"nomeação":"nomeações"} · ${tot?(x.pt/tot*100).toFixed(1):"0.0"}% do esforço · viagem ${x.vg?fmtV(x.vg):"–"} · reserva ${x.rs}</div></div>`).join("")||`<p class="mut">Sem dados.</p>`}
-<p class="mut">Partilha igual: ${fair.toFixed(1)}% por pessoa. O alerta dispara quando os pontos de uma pessoa se afastam mais de 25% da média.</p></div>`+expl}
+<p class="mut">Partilha igual: ${fair.toFixed(1)}% por pessoa. O alerta dispara quando os pontos de uma pessoa se afastam mais de ${TH()}% da média.</p></div>`+expl+sim}
 /* ===== Exportar PDF ===== */
 const HWR=[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,761,556,556,222,556,333,1000,556,556,333,1000,667,333,1000,556,611,556,556,222,222,333,333,350,556,1000,333,1000,500,333,944,556,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500],HWB=[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,761,556,556,278,556,500,1000,556,556,333,1000,667,333,1000,556,611,556,556,278,278,500,500,350,556,1000,333,1000,556,333,944,556,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556];
 const WA={8211:150,8212:151,8226:149,8220:147,8221:148,8216:145,8217:146,8230:133,8364:128};
@@ -280,7 +293,7 @@ T(M,y+10,"Banda Sinfónica da Guarda Nacional Republicana",11,1,GREEN);y+=18;
 T(M,y+16,"Resumo de nomeações e esforço"+(fl.n?" — "+nLbl(fl.n):""),17,1,BLK);y+=26;
 T(M,y+9,`Âmbito: ${fl.n?"naipe de "+nLbl(fl.n):"geral (toda a banda)"} · Período: ${per}`,9,0,GREY);y+=13;
 T(M,y+9,`Gerado em ${gen} · ${evs.length} cerimónia(s) · ${d.pp.length} efetivo(s)`,9,0,GREY);y+=17;
-const crit=`Critério de cálculo: cada nomeação vale 1 ponto, mais 1 ponto por cada ${HV()} ${HV()===1?"hora":"horas"} de viagem, contando ida e volta (a viagem de ida é calculada a partir da Calçada da Ajuda). A reserva não conta. Contam as nomeações que constam nas listas, e não a presença efetiva. Partilha igual: ${d.fair.toFixed(1)}% por pessoa${fl.n?" (as percentagens são calculadas só dentro do naipe)":""}. Marca-se "acima" ou "abaixo" quando os pontos de uma pessoa se afastam mais de 25% da média.`+(d.sv?` ${d.sv} cerimónia(s) sem viagem preenchida contam só 1 ponto.`:"");
+const crit=`Critério de cálculo: cada nomeação vale 1 ponto, mais 1 ponto por cada ${HV()} ${HV()===1?"hora":"horas"} de viagem, contando ida e volta (a viagem de ida é calculada a partir da Calçada da Ajuda). A reserva não conta. Contam as nomeações que constam nas listas, e não a presença efetiva. Partilha igual: ${d.fair.toFixed(1)}% por pessoa${fl.n?" (as percentagens são calculadas só dentro do naipe)":""}. Marca-se "acima" ou "abaixo" quando os pontos de uma pessoa se afastam mais de ${TH()}% da média (folga mínima de 0,5 pontos).`+(d.sv?` ${d.sv} cerimónia(s) sem viagem preenchida contam só 1 ponto.`:"");
 wrapT(crit,CW,8.5,0).forEach(l=>{T(M,y+8,l,8.5,0,GREY);y+=11.5});y+=8;
 const sec=(t)=>{T(M,y+11,t,11,1,GREEN);y+=15;L(M,y,M+CW,y,GREEN,.8);y+=6};
 sec("1. Resumo por pessoa");
