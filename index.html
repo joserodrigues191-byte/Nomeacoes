@@ -69,19 +69,24 @@ body.hm .bn{text-shadow:0 1px 6px rgba(0,0,0,.7)}
 .th{position:relative;display:inline-block;margin:0 8px 8px 0}.th img{width:92px;height:92px;object-fit:cover;border-radius:8px;border:1px solid var(--bd);background:var(--bd);display:block}.th button{position:absolute;top:-6px;right:-6px;min-width:0;width:26px;height:26px;padding:0;border-radius:13px;font-size:13px;line-height:1}
 #vwr{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;touch-action:pinch-zoom}#vwr[hidden]{display:none}#vwr img{max-width:100%;max-height:100%;object-fit:contain}#vwr button{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:14px;min-width:0;font-size:20px;padding:6px 12px}
 textarea.nt{min-height:84px;font-family:inherit;font-size:15px}.hist{margin-top:8px;padding-top:6px;border-top:1px dashed var(--bd)}.hist .hl{padding:5px 0;border-bottom:1px solid var(--bd)}.hist .hl:last-child{border:0}.lgd .hl{padding:5px 0;border-bottom:1px solid var(--bd)}.cht{width:100%;height:auto;display:block}.cht text{fill:var(--mut);font-size:9px}.cht .vl{fill:var(--fg)}.cht .bs{stroke:var(--bd)}.hmw{overflow-x:auto}.hmt{border-collapse:separate;border-spacing:2px;font-size:11px}.hmt td{padding:0;white-space:nowrap}.hmt .nm{max-width:104px;overflow:hidden;text-overflow:ellipsis;padding-right:6px}.hmt .c{width:21px;height:21px;text-align:center;border-radius:3px;position:relative}.hmt .c i{position:absolute;inset:0;background:var(--ac);border-radius:3px}.hmt .c b{position:relative;font-weight:600}.hmt th{font-size:10px;color:var(--mut);font-weight:400;padding:0}.lgd summary{cursor:pointer;margin-bottom:4px}
+main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+.bnm{font-size:12px;color:var(--mut);margin:2px 0 6px}
+.hr2{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 14px}.hr2 .sec{margin:0;font-size:30px;letter-spacing:-.4px}
+.hr2 button{min-height:40px;padding:6px 18px;border-radius:20px;font-weight:700;flex:0 0 auto}
+.bkb{border:0;background:transparent;color:var(--ok);padding:8px 0;font-size:17px;min-height:44px;margin-bottom:2px}
+#tb{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;background:#062f23;border-top:1px solid var(--bd);padding:6px 4px calc(8px + env(safe-area-inset-bottom,0px))}
+#tb button{flex:1;border:0;background:transparent;border-radius:0;color:var(--mut);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:48px;padding:2px 0}
+#tb button.on{color:var(--ok);font-weight:600;background:transparent}
+.ti{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cm{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;margin-bottom:10px;gap:12px}
+.dt{width:46px;flex:0 0 46px;text-align:center;cursor:pointer}.dt b{display:block;font-size:20px;line-height:1.1}.dt span{font-size:11px;color:var(--mut);text-transform:uppercase}
+.sh{font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:var(--mut);margin:12px 2px 8px}
 </style></head><body><main>
 
 <nav id="nav"></nav>
 <div id="v"></div>
 </main>
-<div id="ov" hidden onclick="closeM()"></div>
-<aside id="dr" aria-hidden="true" aria-label="Menu"><img src="emblema.png" alt="" class="dl">
-<button class="mi" data-t="home" onclick="go('home')"><span>Início</span><i>›</i></button>
-<button class="mi" data-t="eq" onclick="go('eq')"><span>Equilíbrio</span><i>›</i></button>
-<button class="mi" data-t="ec" onclick="go('ec')"><span>Evolução</span><i>›</i></button>
-<button class="mi" data-t="ev" onclick="go('ev')"><span>Cerimónias</span><i>›</i></button>
-<button class="mi" data-t="ef" onclick="go('ef')"><span>Efetivos</span><i>›</i></button>
-<button class="mi" data-t="bk" onclick="go('bk')"><span>Cópia de segurança</span><i>›</i></button></aside>
+<footer id="tb"></footer>
 <script>
 const ES=["Nomeado","Reserva"];
 const POSTOS=["GPROV","GUARDA","GPRIN","CABO","CCH","CMOR","FUR","2SAR","1SAR","SAJ","SCH","SMOR"];
@@ -90,7 +95,7 @@ Object.assign(LEG,{"CCHEFE":"CCH","GUARDAPROVISÓRIO":"GPROV","GUARDAPRINCIPAL":
 const INSTR=["Oboé","Flauta","Requinta","Clarinete","Fagote","Sax. Alto","Sax. Tenor","Trompa","Trompete","Trombone","Bombardino","Tuba","Percussão"];
 let mn=null,ed=null;
 let lastAdd={posto:"GUARDA",inst:""};
-let S={people:[],events:[]},tab="home",edit=null,fl={a:"",b:"",n:"",x:"",sh:0,sp:0,so:false,pp:"",ey:"",en:""};
+let S={people:[],events:[]},tab="ev",edit=null,fl={a:"",b:"",n:"",x:"",sh:0,sp:0,so:false,pp:"",ey:"",en:""};
 const mig=()=>{S.events.forEach(e=>e.n.forEach(x=>{if(x.s!=="Reserva")x.s="Nomeado"}));S.people.forEach(p=>{const k=String(p.posto||"").toUpperCase().replace(/[\s.\-]/g,"");if(LEG[k])p.posto=LEG[k];fixP(p)})};
 try{const r=localStorage.getItem("nb1");if(r){S=JSON.parse(r);mig()}}catch(e){}
 const save=()=>{try{localStorage.setItem("nb1",JSON.stringify(S))}catch(e){}};
@@ -98,15 +103,22 @@ const $=s=>document.querySelector(s);
 const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const uid=()=>Math.random().toString(36).slice(2,9);
 const P=id=>S.people.find(p=>p.id===id);
-const TT={ec:"Evolução",eq:"Equilíbrio",ev:"Cerimónias",ef:"Efetivos",bk:"Cópia de segurança"};
-function nav(){document.body.classList.toggle("hm",tab==="home");$("#nav").innerHTML=`<div class="hd"><button class="ib" aria-label="Abrir menu" title="Menu" onclick="openM()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><div class="bn">Banda Sinfónica da Guarda Nacional Republicana</div></div>${TT[tab]?`<h1 class="sec">${TT[tab]}</h1>`:""}`;
-document.querySelectorAll(".mi").forEach(b=>b.classList.toggle("on",b.dataset.t===tab))}
-function openM(){$("#ov").hidden=false;$("#dr").classList.add("open");$("#dr").setAttribute("aria-hidden","false")}
-function closeM(){$("#ov").hidden=true;$("#dr").classList.remove("open");$("#dr").setAttribute("aria-hidden","true")}
-function go(t){tab=t;edit=null;edId=null;vw=null;if(t==="eq")fl.n="";closeM();draw();window.scrollTo(0,0)}
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeM()});
-function vHome(){return `<div class="home"></div>`}
-function draw(){nav();$("#v").innerHTML={home:vHome,ec:vEc,eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]();loadImgs()}
+const TT={mais:"Mais",ec:"Evolução",eq:"Equilíbrio",ev:"Cerimónias",ef:"Efetivos",bk:"Cópia de segurança"};
+const IC={ev:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',eq:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',ec:'<path d="M3 17l6-6 4 4 8-8"/>',mais:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>'};
+function nav(){const sub=tab==="ev"&&(edit||vw),back=sub?["‹ Cerimónias","edit=null;vw=null;draw()"]:(tab==="ef"||tab==="bk")?["‹ Mais","go('mais')"]:null;
+$("#nav").innerHTML=`<div class="bnm">Banda Sinfónica da Guarda Nacional Republicana</div>${back?`<button class="bkb" onclick="${back[1]}">${back[0]}</button>`:""}${sub?"":`<div class="hr2"><h1 class="sec">${TT[tab]||""}</h1>${tab==="ev"?`<button class="pri" onclick="newEv()">+ Nova</button>`:""}</div>`}`;
+$("#tb").innerHTML=[["ev","Cerimónias"],["eq","Equilíbrio"],["ec","Evolução"],["mais","Mais"]].map(([k,n])=>`<button class="${tab===k||(k==="mais"&&(tab==="ef"||tab==="bk"))?"on":""}" onclick="go('${k}')"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>${n}</button>`).join("")}
+function go(t){tab=t;edit=null;edId=null;vw=null;if(t==="eq")fl.n="";draw();window.scrollTo(0,0)}
+function draw(){nav();$("#v").innerHTML={mais:vMais,ec:vEc,eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]();loadImgs()}
+function vMais(){const n=S.people.length;
+return `<div class="cm" onclick="go('ef')" style="cursor:pointer;display:flex;align-items:center;gap:8px"><div class="ln"><div class="tt">Efetivos</div><div class="mut">${n} ${n===1?"pessoa":"pessoas"} · cadastro</div></div><span class="mut" style="font-size:24px">›</span></div>
+<div class="sh">Cálculo do esforço</div>
+<div class="card"><div class="g3" style="grid-template-columns:1fr 1fr">${fld("Horas por ponto","",`<input type="number" step="0.5" min="0.5" inputmode="decimal" value="${HV()}" onchange="setH(this.value)">`)}${fld("Limite dos alertas (%)","",`<input type="number" step="1" min="1" max="100" inputmode="numeric" value="${TH()}" onchange="setP(this.value)">`)}</div>
+<p class="mut">A cada ${HV()} h de viagem (ida e volta) soma-se mais 1 ponto.</p>
+<div class="row" style="margin:0"><button onclick="fl.so=true;go('eq')">Simular outros valores</button></div></div>
+<div class="sh">Dados</div>
+<div class="cm" onclick="go('bk')" style="cursor:pointer;display:flex;align-items:center;gap:8px"><div class="ln"><div class="tt">Cópia de segurança</div><div class="mut">Guardar ou restaurar os dados</div></div><span class="mut" style="font-size:24px">›</span></div>
+${(S.log||[]).length?`<div class="cm lgd"><details><summary><b>Registo de remoções</b> (${S.log.length})</summary>${[...S.log].reverse().map(l=>`<div class="hl mut"><b>${fdt(l.t)}</b> · ${esc(l.a)}</div>`).join("")}</details></div>`:""}`}
 /* Efetivos */
 function nk(t){return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[\s.]/g,"")}
 function fixP(p){if(p.adido===undefined){const o=String(p.ordem||"");if(o&&o.length!==7){p.adido=o;p.ordem=""}else p.adido=""}
@@ -156,19 +168,17 @@ const iR=p=>{const i=INSTR.indexOf(p.inst);return i<0?99:i};
 function cmpI(a,b){return iR(a)-iR(b)||cmpH(a,b)}
 function vEv(){if(edit)return fEv();if(vw)return vBanda();
 const L=S.events;
-return `<div class="card"><div class="row"><h2 style="flex:3;margin:0">Cerimónias (${L.length})</h2><button class="pri" onclick="newEv()">+ Nova cerimónia</button></div>
-<div class="row"><input id="cq" type="search" placeholder="Pesquisar: nome, local, pessoa, nota…" value="${esc(cf.q)}" oninput="cf.q=this.value;evR()"></div>
-<div class="row"><input type="date" value="${cf.a}" onchange="cf.a=this.value;evR()"><input type="date" value="${cf.b}" onchange="cf.b=this.value;evR()"><button onclick="cf={q:'',a:'',b:''};draw()">Limpar</button></div>
+return `<div><div class="row"><input id="cq" type="search" placeholder="Pesquisar: nome, local, pessoa, nota…" value="${esc(cf.q)}" oninput="cf.q=this.value;evR()"></div>
+<details ${cf.a||cf.b?"open":""}><summary class="mut" style="cursor:pointer;padding:4px 0 8px">Filtrar por datas</summary><div class="row"><input type="date" value="${cf.a}" onchange="cf.a=this.value;evR()"><input type="date" value="${cf.b}" onchange="cf.b=this.value;evR()"><button onclick="cf={q:'',a:'',b:''};draw()">Limpar</button></div></details>
 <p class="mut" id="evc">${evC()}</p>
-<div id="evl">${evL()}</div></div>
-${(S.log||[]).length?`<div class="card lgd"><details><summary><b>Registo de remoções</b> (${S.log.length})</summary>${[...S.log].reverse().map(l=>`<div class="hl mut"><b>${fdt(l.t)}</b> · ${esc(l.a)}</div>`).join("")}</details></div>`:""}`}
+<div id="evl">${evL()}</div></div>`}
 let cf={q:"",a:"",b:""};
 const nrm=t=>String(t||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 function evM(e){if(cf.a&&e.data<cf.a)return false;if(cf.b&&e.data>cf.b)return false;const q=nrm(cf.q).trim();if(!q)return true;
 const pp=e.n.map(x=>{const p=P(x.p);return p?p.posto+" "+p.nome+" "+p.adido:""}).join(" "),h=nrm([e.nome,e.local,e.tipo,e.notas,fd(e.data),pp].join(" "));return q.split(/\s+/).every(w=>h.includes(w))}
 function evC(){const t=S.events.length,m=S.events.filter(evM).length;return m===t?`${t} cerimónias`:`${m} de ${t} cerimónias`}
 function evR(){$("#evl").innerHTML=evL();$("#evc").textContent=evC()}
-function evL(){const L=S.events.filter(evM);return L.map(e=>{const n=e.n.filter(x=>x.s==="Nomeado").length;return `<div class="pl2 pr"><div class="ln" onclick="vw='${e.id}';draw()" style="cursor:pointer"><div class="tt">${esc(e.nome||e.local||"Sem nome")}</div><div class="mut">${fd(e.data)}${e.local&&e.nome?" · "+esc(e.local):""} · ${n} nomeados${e.montada?"":" · por montar"}</div></div>
+function evL(){const L=S.events.filter(evM);const ML=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];return L.map((e,i)=>{const mh=(i===0||L[i-1].data.slice(0,7)!==e.data.slice(0,7))&&e.data?`<div class="sh">${ML[+e.data.slice(5,7)-1]||""} ${e.data.slice(0,4)}</div>`:"";const n=e.n.filter(x=>x.s==="Nomeado").length;return mh+`<div class="pl2 pr cm"><div class="dt" onclick="vw='${e.id}';draw()"><b>${e.data?e.data.slice(8,10):"–"}</b><span>${e.data?ML[+e.data.slice(5,7)-1].slice(0,3):""}</span></div><div class="ln" onclick="vw='${e.id}';draw()" style="cursor:pointer"><div class="tt">${esc(e.nome||e.local||"Sem nome")}</div><div class="mut">${e.local&&e.nome?esc(e.local)+" · ":""}${e.viag!=null?"viagem "+fmtV(e.viag)+" · ":""}${n} nomeados${e.montada?"":" · <span class=\"lo\">por montar</span>"}</div></div>
 <div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${e.id}')">⋯</button><div class="menu" id="m_${e.id}" hidden><button onclick="edit='${e.id}';draw()">Editar</button><button class="del" onclick="delE('${e.id}')">Remover</button></div></div></div>`}).join("")||`<p class="mut">${S.events.length?"Nenhuma cerimónia corresponde à pesquisa.":"Ainda sem cerimónias."}</p>`}
 function newEv(){const e={id:uid(),data:new Date().toISOString().slice(0,10),nome:"",local:"",tipo:"Cerimónia",viag:null,n:[],montada:false};S.events.push(e);edit=e.id;vw=null;save();draw()}
 function delE(id){if(!confirm("Apagar esta cerimónia?"))return;const e=EV(id);(e&&e.fotos||[]).forEach(f=>{fDel(f.id);delete urls[f.id]});(S.log=S.log||[]).push({t:new Date().toISOString(),a:`Cerimónia apagada: ${e?fd(e.data)+" · "+(e.nome||e.local||"Sem nome")+" ("+e.n.filter(x=>x.s==="Nomeado").length+" nomeados)":id}`});S.events=S.events.filter(e=>e.id!==id);save();draw()}
