@@ -110,7 +110,7 @@ const ES=["Nomeado","Reserva"];
 const POSTOS=["GPROV","GUARDA","GPRIN","CABO","CCH","CMOR","FUR","2SAR","1SAR","SAJ","SCH","SMOR","ALF","TEN","CAP","MAJ","TCOR","COR"];
 const LEG={};POSTOS.forEach(x=>LEG[x]=x);
 Object.assign(LEG,{"CCHEFE":"CCH","GUARDAPROVISÓRIO":"GPROV","GUARDAPRINCIPAL":"GPRIN","CABOCHEFE":"CCH","CABOMOR":"CMOR","FURRIEL":"FUR","2ºSARGENTO":"2SAR","1ºSARGENTO":"1SAR","SARGENTOAJUDANTE":"SAJ","SARGENTOCHEFE":"SCH","SARGENTOMOR":"SMOR"});
-const INSTR=["Oboé","Flauta","Requinta","Clarinete","Fagote","Sax. Alto","Sax. Tenor","Trompa","Trompete","Trombone","Bombardino","Tuba","Percussão","Violino","Viola","Violoncelo","Contrabaixo"];
+const INSTR=["Oboé","Flauta","Requinta","Clarinete","Fagote","Saxofone","Trompa","Trompete","Trombone","Bombardino","Tuba","Percussão","Violino","Viola","Violoncelo","Contrabaixo","Piano","Harpa"];
 let mn=null,ed=null;
 let lastAdd={posto:"GUARDA",inst:""};
 let S={people:[],events:[]},tab="ev",edit=null,fl={a:"",b:"",n:"",x:"",sh:0,sp:0,so:false,pp:"",ey:"",en:""};
@@ -166,7 +166,7 @@ return `<div class="cm lgd"><details><summary><b>Reciclagem</b> (${B.length})</s
 /* Efetivos */
 function nk(t){return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[\s.]/g,"")}
 function fixP(p){if(!p.g)p.g="B";if(p.adido===undefined){const o=String(p.ordem||"");if(o&&o.length!==7){p.adido=o;p.ordem=""}else p.adido=""}
-p.ordem=String(p.ordem||"");const m=INSTR.find(i=>nk(i)===nk(p.inst));if(m)p.inst=m}
+if(/^sax/.test(nk(p.inst)))p.inst="Saxofone";p.ordem=String(p.ordem||"");const m=INSTR.find(i=>nk(i)===nk(p.inst));if(m)p.inst=m}
 function opts(list,sel,ph){return (sel&&!list.includes(sel)?`<option selected>${esc(sel)}</option>`:"")+(ph?`<option value="" ${sel?"":"selected"}>${ph}</option>`:"")+list.map(x=>`<option ${x===sel?"selected":""}>${esc(x)}</option>`).join("")}
 const GRP_P=[["Oficiais",["COR","TCOR","MAJ","CAP","TEN","ALF"]],["Sargentos",["SMOR","SCH","SAJ","1SAR","2SAR","FUR"]],["Praças",["CMOR","CCH","CABO","GPRIN","GUARDA","GPROV"]]];
 function optP(sel){const k=GRP_P.flatMap(g=>g[1]);return (sel&&!k.includes(sel)?`<option selected>${esc(sel)}</option>`:"")+GRP_P.map(([n,l])=>`<optgroup label="${n}">${l.map(x=>`<option ${x===sel?"selected":""}>${x}</option>`).join("")}</optgroup>`).join("")}
@@ -177,7 +177,7 @@ function frm(x,p){return `<div class="g3">${fld("Posto","",`<select id="${x}P">$
 <div class="row">${fld("Nome","",`<input id="${x}N" value="${esc(p.nome)}">`)}</div>
 <div class="row">${fld("Funções","",`<select id="${x}C" onchange="['IR','GR'].forEach(k=>document.getElementById('${x}'+k).hidden=CATS.includes(this.value))"><option value="" ${FUN.includes(p.cat)?"":"selected"}>Instrumentista</option>${FUN.map(c=>`<option ${c===p.cat?"selected":""}>${c}</option>`).join("")}</select>`)}</div>
 <div class="row" id="${x}IR" ${CATS.includes(p.cat)?"hidden":""}>${fld("Instrumento","",`<select id="${x}I">${opts(INSTR,p.inst,"Selecionar")}</select>`)}</div>
-<div class="row" id="${x}GR" ${CATS.includes(p.cat)?"hidden":""}>${fld("Grupo","",`<select id="${x}G">${[["B","Banda"],["BO","Banda e Orquestra"],["O","Só Orquestra"]].map(([k,l])=>`<option value="${k}" ${(p.g||"B")===k?"selected":""}>${l}</option>`).join("")}</select>`)}</div>`}
+<div class="row" id="${x}GR" ${CATS.includes(p.cat)?"hidden":""}>${fld("Grupo","",`<select id="${x}G">${[["B","Banda"],["BO","Banda e Orquestra"],["O","Orquestra"]].map(([k,l])=>`<option value="${k}" ${(p.g||"B")===k?"selected":""}>${l}</option>`).join("")}</select>`)}</div>`}
 const rk=p=>{const i=POSTOS.indexOf(p.posto);return i<0?-1:i};
 const ad=p=>p.adido?parseFloat(p.adido):Infinity;
 function cmpH(a,b){const d=rk(b)-rk(a);if(d)return d;const x=ad(a),y=ad(b);if(x!==y)return x<y?-1:1;return String(a.nome).localeCompare(String(b.nome),"pt")}
@@ -193,7 +193,7 @@ return (fl.nf?`<div class="card"><h2>Adicionar efetivo</h2>${frm("n",{posto:last
 ${naipes(true).map(n=>{const G=L.filter(p=>grp(p)===n);if(!G.length)return"";
 return `<details class="nd" ${(fl.cc&&fl.cc[n])||G.some(p=>p.id===edId)?"open":""} ontoggle="(fl.cc=fl.cc||{})['${esc(n)}']=this.open"><summary><span class="tt">${esc(nLbl(n))}</span> <span class="mut">${G.length}</span></summary>
 ${G.map(p=>p.id===edId?`<div class="pl2">${frm("e",p)}<div class="row"><button class="pri" onclick="saveE()">Guardar</button><button onclick="edId=null;draw()">Cancelar</button></div></div>`
-:`<div class="pl2 pr"><span class="ln">${v(p.posto)}; ${v(p.adido)}; ${v(p.ordem)}; ${v(p.nome)}${p.inst&&p.inst!==n?"; "+v(p.inst):""}${p.cat===GH?` <span class="mut">(Chefia GH)</span>`:""}${p.g&&p.g!=="B"?` <span class="mut">(${p.g==="O"?"só orquestra":"banda + orquestra"})</span>`:""}</span><div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${p.id}')">⋯</button><div class="menu" id="m_${p.id}" hidden><button onclick="edId='${p.id}';draw()">Editar</button><button class="del" onclick="delP('${p.id}')">Remover</button></div></div></div>`).join("")}</details>`}).join("")||`<p class="mut">Ainda sem efetivos.</p>`}</div>`}
+:`<div class="pl2 pr"><span class="ln">${v(p.posto)}; ${v(p.adido)}; ${v(p.ordem)}; ${v(p.nome)}${p.inst&&p.inst!==n?"; "+v(p.inst):""}${p.cat===GH?` <span class="mut">(Chefia GH)</span>`:""}${p.g&&p.g!=="B"?` <span class="mut">(${p.g==="O"?"orquestra":"banda + orquestra"})</span>`:""}</span><div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${p.id}')">⋯</button><div class="menu" id="m_${p.id}" hidden><button onclick="edId='${p.id}';draw()">Editar</button><button class="del" onclick="delP('${p.id}')">Remover</button></div></div></div>`).join("")}</details>`}).join("")||`<p class="mut">Ainda sem efetivos.</p>`}</div>`}
 function cm(){document.querySelectorAll(".menu").forEach(m=>m.hidden=true)}
 function tm(e,id){e.stopPropagation();const m=document.getElementById("m_"+id),was=!m.hidden;cm();m.hidden=was}
 document.addEventListener("click",cm);
@@ -403,7 +403,7 @@ function setP(v){const p=parseFloat(String(v).replace(",","."));if(!(p>0&&p<=100
 function applySim(){const h=fl.sh>0?fl.sh:HV(),p=fl.sp>0&&fl.sp<=100?fl.sp:TH();if(!confirm("Aplicar "+h+" hora(s) por ponto e limite de alertas de "+p+"%? Isto recalcula todo o histórico e os PDFs seguintes."))return;S.cfg=S.cfg||{};S.cfg.h=h;S.cfg.p=p;fl.sh=0;fl.sp=0;save();draw()}
 function setH(v){const h=parseFloat(String(v).replace(",","."));if(!(h>0)){alert("Indique um número de horas maior que zero.");return draw()}S.cfg=S.cfg||{};S.cfg.h=h;save();draw()}
 const nOf=i=>i==="Requinta"?"Clarinete":(i||"");
-const CATS=["Chefia","Subchefia","Secretaria","Arquivo"],GH="Chefia GH",FUN=[...CATS,GH];
+const CATS=["Chefia","Subchefia","Secretaria","Arquivo","RP"],GH="Chefia GH",FUN=[...CATS,GH];
 const mg=p=>p.cat===GH?GH:grp(p);
 const grp=p=>CATS.includes(p.cat)?p.cat:(nOf(p.inst)||"__none");
 function naipes(all){const st=new Set(S.people.filter(p=>all||!CATS.includes(p.cat)).map(grp)),a=(all?CATS.filter(i=>st.has(i)):[]).concat(INSTR.filter(i=>st.has(i)));st.forEach(i=>{if(i!=="__none"&&!INSTR.includes(i)&&!CATS.includes(i))a.push(i)});if(st.has("__none"))a.push("__none");return a}
