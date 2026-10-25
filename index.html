@@ -66,6 +66,9 @@ body.hm .bn{text-shadow:0 1px 6px rgba(0,0,0,.7)}
 .mi{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;border-bottom:1px solid var(--bd);border-radius:0;padding:17px 20px;text-align:left;font-size:17px;background:transparent}
 .mi i{font-style:normal;color:var(--mut);font-size:22px}.mi.on{background:var(--ac);color:var(--onac,#fff)}.mi.on i{color:var(--onac,#fff)}
 .bn{flex:1;font-weight:700;font-size:15px;line-height:1.25}.sec{margin:4px 0 12px}
+.th{position:relative;display:inline-block;margin:0 8px 8px 0}.th img{width:92px;height:92px;object-fit:cover;border-radius:8px;border:1px solid var(--bd);background:var(--bd);display:block}.th button{position:absolute;top:-6px;right:-6px;min-width:0;width:26px;height:26px;padding:0;border-radius:13px;font-size:13px;line-height:1}
+#vwr{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;touch-action:pinch-zoom}#vwr[hidden]{display:none}#vwr img{max-width:100%;max-height:100%;object-fit:contain}#vwr button{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:14px;min-width:0;font-size:20px;padding:6px 12px}
+textarea.nt{min-height:84px;font-family:inherit;font-size:15px}.hist{margin-top:8px;padding-top:6px;border-top:1px dashed var(--bd)}.hist .hl{padding:5px 0;border-bottom:1px solid var(--bd)}.hist .hl:last-child{border:0}
 </style></head><body><main>
 
 <nav id="nav"></nav>
@@ -86,7 +89,7 @@ Object.assign(LEG,{"CCHEFE":"CCH","GUARDAPROVISÓRIO":"GPROV","GUARDAPRINCIPAL":
 const INSTR=["Oboé","Flauta","Requinta","Clarinete","Fagote","Sax. Alto","Sax. Tenor","Trompa","Trompete","Trombone","Bombardino","Tuba","Percussão"];
 let mn=null,ed=null;
 let lastAdd={posto:"GUARDA",inst:""};
-let S={people:[],events:[]},tab="home",edit=null,fl={a:"",b:"",n:"",x:"",sh:0,sp:0,so:false};
+let S={people:[],events:[]},tab="home",edit=null,fl={a:"",b:"",n:"",x:"",sh:0,sp:0,so:false,pp:""};
 const mig=()=>{S.events.forEach(e=>e.n.forEach(x=>{if(x.s!=="Reserva")x.s="Nomeado"}));S.people.forEach(p=>{const k=String(p.posto||"").toUpperCase().replace(/[\s.\-]/g,"");if(LEG[k])p.posto=LEG[k];fixP(p)})};
 try{const r=localStorage.getItem("nb1");if(r){S=JSON.parse(r);mig()}}catch(e){}
 const save=()=>{try{localStorage.setItem("nb1",JSON.stringify(S))}catch(e){}};
@@ -102,7 +105,7 @@ function closeM(){$("#ov").hidden=true;$("#dr").classList.remove("open");$("#dr"
 function go(t){tab=t;edit=null;edId=null;vw=null;if(t==="eq")fl.n="";closeM();draw();window.scrollTo(0,0)}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeM()});
 function vHome(){return `<div class="home"></div>`}
-function draw(){nav();$("#v").innerHTML={home:vHome,eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]()}
+function draw(){nav();$("#v").innerHTML={home:vHome,eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]();loadImgs()}
 /* Efetivos */
 function nk(t){return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[\s.]/g,"")}
 function fixP(p){if(p.adido===undefined){const o=String(p.ordem||"");if(o&&o.length!==7){p.adido=o;p.ordem=""}else p.adido=""}
@@ -156,7 +159,25 @@ return `<div class="card"><div class="row"><h2 style="flex:3;margin:0">Cerimóni
 ${L.map(e=>{const n=e.n.filter(x=>x.s==="Nomeado").length;return `<div class="pl2 pr"><div class="ln" onclick="vw='${e.id}';draw()" style="cursor:pointer"><div class="tt">${esc(e.nome||e.local||"Sem nome")}</div><div class="mut">${fd(e.data)}${e.local&&e.nome?" · "+esc(e.local):""} · ${n} nomeados${e.montada?"":" · por montar"}</div></div>
 <div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${e.id}')">⋯</button><div class="menu" id="m_${e.id}" hidden><button onclick="edit='${e.id}';draw()">Editar</button><button class="del" onclick="delE('${e.id}')">Remover</button></div></div></div>`}).join("")||`<p class="mut">Ainda sem cerimónias.</p>`}</div>`}
 function newEv(){const e={id:uid(),data:new Date().toISOString().slice(0,10),nome:"",local:"",tipo:"Cerimónia",viag:null,n:[],montada:false};S.events.push(e);edit=e.id;vw=null;save();draw()}
-function delE(id){if(!confirm("Apagar esta cerimónia?"))return;S.events=S.events.filter(e=>e.id!==id);save();draw()}
+function delE(id){if(!confirm("Apagar esta cerimónia?"))return;const e=EV(id);(e&&e.fotos||[]).forEach(f=>{fDel(f.id);delete urls[f.id]});S.events=S.events.filter(e=>e.id!==id);save();draw()}
+
+/* Fotos das listas (IndexedDB, só neste dispositivo) */
+const odb=()=>new Promise((ok,ko)=>{if(!window.indexedDB)return ko("sem IndexedDB");const r=indexedDB.open("nbf",1);r.onupgradeneeded=()=>r.result.createObjectStore("f");r.onsuccess=()=>ok(r.result);r.onerror=()=>ko(r.error)});
+const fop=async(m,f)=>{const d=await odb();return new Promise((ok,ko)=>{const t=d.transaction("f",m),o=t.objectStore("f");let r;try{r=f(o)}catch(e){return ko(e)}t.oncomplete=()=>{d.close();ok(r&&r.result)};t.onerror=t.onabort=()=>ko(t.error)})};
+const fPut=(id,v)=>fop("readwrite",o=>o.put(v,id)),fGet=id=>fop("readonly",o=>o.get(id)),fDel=id=>fop("readwrite",o=>o.delete(id)).catch(()=>{}),fClr=()=>fop("readwrite",o=>o.clear()).catch(()=>{});
+const urls={};
+async function fUrl(id){if(urls[id])return urls[id];const v=await fGet(id);if(!v)return"";return urls[id]=URL.createObjectURL(new Blob([v.buf],{type:v.type}))}
+function loadImgs(){document.querySelectorAll("img[data-f]").forEach(async im=>{try{const u=await fUrl(im.dataset.f);if(u)im.src=u;else im.alt="foto indisponível"}catch(e){im.alt="foto indisponível"}})}
+function shrink(file){return new Promise((ok,ko)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{const k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>b?b.arrayBuffer().then(buf=>ok({type:"image/jpeg",buf}),ko):ko("blob"),"image/jpeg",.82)};im.onerror=()=>{URL.revokeObjectURL(u);ko("imagem")};im.src=u})}
+async function addFoto(inp){const e=EV(edit);if(!e)return;const fs=[...inp.files];inp.value="";if(!fs.length)return;
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(x){}
+const st=$("#fst");let bad=0;
+for(const f of fs){try{if(st)st.textContent="A guardar foto…";const v=await shrink(f),id=uid();await fPut(id,v);(e.fotos=e.fotos||[]).push({id,t:new Date().toISOString().slice(0,10)});save()}catch(x){bad++}}
+draw();if(bad)alert("Não foi possível guardar "+bad+" foto(s). Tente de novo.")}
+async function delFoto(id){if(!confirm("Remover esta foto?"))return;const e=EV(edit);e.fotos=(e.fotos||[]).filter(f=>f.id!==id);if(urls[id]){URL.revokeObjectURL(urls[id]);delete urls[id]}await fDel(id);save();draw()}
+async function verFoto(id){const u=await fUrl(id);if(!u)return alert("Foto indisponível neste dispositivo.");let o=$("#vwr");if(!o){o=document.createElement("div");o.id="vwr";o.onclick=()=>o.hidden=true;document.body.appendChild(o)}
+o.innerHTML=`<img src="${u}" alt="Lista original"><button onclick="event.stopPropagation();$('#vwr').hidden=true" aria-label="Fechar">✕</button>`;o.hidden=false}
+const thumbs=(e,rm)=>(e.fotos||[]).map(f=>`<span class="th"><img data-f="${f.id}" alt="" onclick="verFoto('${f.id}')">${rm?`<button class="del" onclick="delFoto('${f.id}')" aria-label="Remover foto">✕</button>`:""}</span>`).join("");
 function stl(s){return s==="Nomeado"?["n","Nomeado"]:s==="Reserva"?["r","Reserva"]:["","—"]}
 function cnt(e){const n=e.n.filter(x=>x.s==="Nomeado").length,r=e.n.filter(x=>x.s==="Reserva").length;return `${n} nomeados · ${r} em reserva`}
 function fEv(){const e=EV(edit);if(!e){edit=null;return vEv()}
@@ -172,6 +193,11 @@ ${fld("Viagem (ida)","",`<input id="vg" value="${e.viag!=null?fmtV(e.viag):""}" 
 ${fld("Tipo","",`<input value="${esc(e.tipo)}" onchange="up('tipo',this.value)">`)}</div>
 <p class="mut" id="vst">${e.viagInfo?esc(e.viagInfo):"A viagem é calculada ao indicar o local, a partir da Calçada da Ajuda. Pode corrigir o valor à mão."}</p>
 <div class="row"><button onclick="calcViagem()">Calcular viagem</button></div></div>
+<div class="card"><h2>Lista original (foto)</h2>
+<p class="mut">Guarde a foto da lista tal como foi publicada, como prova. Fica só neste telemóvel e <b>não entra na cópia de segurança</b>.</p>
+<div>${thumbs(e,true)}</div><p class="mut" id="fst"></p>
+<label class="row" style="margin:0"><span class="pri" style="display:block;text-align:center;padding:9px 12px;border-radius:8px;cursor:pointer;background:var(--ac);color:#fff">+ Adicionar foto</span><input type="file" accept="image/*" multiple hidden onchange="addFoto(this)"></label></div>
+<div class="card"><h2>Notas</h2>${fld("Observações (trocas, alterações não comunicadas…)","",`<textarea class="nt" placeholder="Ex.: troca entre X e Y, não comunicada" onchange="up('notas',this.value)">${esc(e.notas||"")}</textarea>`)}</div>
 <div class="card"><h2>Montar a banda</h2>
 <p class="mut">Toque numa pessoa para a marcar: uma vez <b>Nomeado</b>, duas vezes <b>Reserva</b>, três vezes para retirar.</p>
 <p id="cnt"><b>${cnt(e)}</b></p>
@@ -195,7 +221,7 @@ e.viag=Math.round(j.routes[0].duration/60);const km=Math.round(j.routes[0].dista
 e.viagInfo=`${km} km desde a Calçada da Ajuda · estimativa sem trânsito. Pode corrigir à mão.`;save();
 if(edit===id&&$("#vg")){$("#vg").value=fmtV(e.viag);st().textContent=e.viagInfo}}
 catch(err){if(edit===id&&st())st().textContent=err==="local"?"Não encontrei esse local. Tente um nome mais completo (ex.: Cartaxo, Santarém) ou escreva a viagem à mão.":"Não foi possível calcular a viagem (sem ligação?). Escreva-a à mão."}}
-function up(k,v){EV(edit)[k]=v;save()}
+function up(k,v){const e=EV(edit);if(!e)return;e[k]=v;save()}
 function cyc(id){const e=EV(edit),x=e.n.find(q=>q.p===id);
 if(!x)e.n.push({p:id,s:"Nomeado"});else if(x.s==="Nomeado")x.s="Reserva";else e.n=e.n.filter(q=>q.p!==id);
 const s=(e.n.find(q=>q.p===id)||{}).s||"",[c,l]=stl(s);$("#r_"+id).className="pk "+c;$("#b_"+id).textContent=l;$("#cnt").innerHTML="<b>"+cnt(e)+"</b>";save()}
@@ -210,6 +236,7 @@ const kv=(k,v)=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`;
 return `<div class="card"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><h2 style="flex:1;margin:0">${esc(e.nome||"Banda nomeada")}</h2>
 <button id="eye" class="dots" style="flex:0 0 auto;min-width:0;padding:6px 10px" aria-label="Ver nomeações" aria-pressed="false" title="Ver nomeações" onclick="tgl()">${EYE}</button></div>
 <div style="margin-top:8px">${kv("Tipo",esc(e.tipo)||"–")}${kv("Local",esc(e.local)||"–")}${kv("Data",fd(e.data))}${kv("Viagem (ida)",e.viag!=null?fmtV(e.viag):"–")}${kv("Total nomeados",N.length+(R.length?` <span class="mut">(+${R.length} em reserva)</span>`:""))}</div>
+${e.notas?`<div class="ih">Notas</div><div style="white-space:pre-wrap">${esc(e.notas)}</div>`:""}${(e.fotos||[]).length?`<div class="ih">Lista original</div><div>${thumbs(e,false)}</div>`:""}
 <div id="lista" hidden style="margin-top:12px">${body||`<p class="mut">Sem nomeados.</p>`}
 ${R.length?`<div class="ih">Reserva</div>${R.map(p=>`<div class="pl2">${ln(p)} <span class="mut">(${esc(p.inst||"–")})</span></div>`).join("")}`:""}</div>
 <div class="row" style="margin-top:14px"><button class="pri" onclick="vw=null;draw()">Voltar</button></div></div>`}
@@ -229,7 +256,9 @@ const r=pp.map(p=>{let f=0,rs=0,vg=0,pt=0;ev.forEach(e=>{const x=e.n.find(n=>n.p
 const tot=r.reduce((s,x)=>s+x.pt,0),avg=r.length?tot/r.length:0,mx=Math.max(1e-9,...r.map(x=>x.pt)),fair=r.length?100/r.length:0;
 return{ev,sv,r,tot,avg,mx,fair,pp}}
 const stT=(x,avg,p)=>{if(!avg)return"";const t=Math.max(.5,avg*(p>0?p:TH())/100);return x.pt>avg+t?"acima":x.pt<avg-t?"abaixo":"na média"};
-function openN(i){fl.n=naipes()[i]||"";draw();window.scrollTo(0,0)}
+function hist(p){const L=S.events.filter(e=>(!fl.a||e.data>=fl.a)&&(!fl.b||e.data<=fl.b)&&e.n.some(x=>x.p===p.id)).sort((a,b)=>b.data.localeCompare(a.data));
+return `<div class="hist">${L.map(e=>{const x=e.n.find(q=>q.p===p.id),nm=x.s==="Nomeado";return `<div class="hl"><div class="tt">${fd(e.data)} · ${esc(e.nome||e.local||"Sem nome")}</div><div class="mut">${nm?"Nomeado":"Reserva"} · ${e.local?esc(e.local)+" · ":""}viagem ${e.viag!=null?fmtV(e.viag):"–"} · ${nm?peso(e).toFixed(2)+" pts":"não conta"}</div>${e.notas?`<div class="mut">Nota: ${esc(e.notas)}</div>`:""}</div>`}).join("")||`<p class="mut">Sem nomeações no período.</p>`}</div>`}
+function openN(i){fl.n=naipes()[i]||"";fl.pp="";draw();window.scrollTo(0,0)}
 function vEq(){if(fl.n&&!naipes().includes(fl.n))fl.n="";
 const d=calcEq(),{ev,sv,r,tot,avg,mx,fair}=d,inN=!!fl.n;
 const fl2=x=>{const t=stT(x,avg);return t?`<span class="tag ${t==="acima"?"hi":t==="abaixo"?"lo":"ok"}">${t}</span>`:""};
@@ -262,9 +291,9 @@ return per+`<div class="card"><h2>Naipes</h2><p class="mut">Toque num naipe para
 return `<div class="card"><div class="row" style="flex-wrap:nowrap;align-items:center;margin:0"><button onclick="fl.n='';draw();window.scrollTo(0,0)" style="flex:0 0 auto;min-width:0">‹ Naipes</button><h2 style="flex:1;margin:0">${esc(nLbl(fl.n))}</h2></div>
 <p class="mut" style="margin-bottom:0">${d.pp.length} efetivo(s). As percentagens de esforço são calculadas só dentro do naipe.</p></div>`+perD+
 `<div class="card"><h2>Pessoas</h2>
-${r.map(x=>`<div class="pl2"><div class="pr"><div class="ln"><div class="tt">${esc(x.p.posto)} ${esc(x.p.nome)}</div></div>${fl2(x)}</div>
+${r.map(x=>`<div class="pl2"><div class="pr" onclick="fl.pp=fl.pp==='${x.p.id}'?'':'${x.p.id}';draw()" style="cursor:pointer"><div class="ln"><div class="tt">${esc(x.p.posto)} ${esc(x.p.nome)} <span class="mut">${fl.pp===x.p.id?"▴":"▾"}</span></div></div>${fl2(x)}</div>
 <div class="bar" style="margin:7px 0 5px"><i style="width:${x.pt/mx*100}%"></i></div>
-<div class="mut">${x.f} ${x.f===1?"nomeação":"nomeações"} · ${tot?(x.pt/tot*100).toFixed(1):"0.0"}% do esforço · viagem ${x.vg?fmtV(x.vg):"–"} · reserva ${x.rs}</div></div>`).join("")||`<p class="mut">Sem dados.</p>`}
+<div class="mut">${x.f} ${x.f===1?"nomeação":"nomeações"} · ${tot?(x.pt/tot*100).toFixed(1):"0.0"}% do esforço · viagem ${x.vg?fmtV(x.vg):"–"} · reserva ${x.rs}</div>${fl.pp===x.p.id?hist(x.p):""}</div>`).join("")||`<p class="mut">Sem dados.</p>`}
 <p class="mut">Partilha igual: ${fair.toFixed(1)}% por pessoa. O alerta dispara quando os pontos de uma pessoa se afastam mais de ${TH()}% da média.</p></div>`+expl+sim}
 /* ===== Exportar PDF ===== */
 const HWR=[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,761,556,556,222,556,333,1000,556,556,333,1000,667,333,1000,556,611,556,556,222,222,333,333,350,556,1000,333,1000,500,333,944,556,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500],HWB=[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,761,556,556,278,556,500,1000,556,556,333,1000,667,333,1000,556,611,556,556,278,278,500,500,350,556,1000,333,1000,556,333,944,556,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556];
@@ -323,10 +352,12 @@ const get=s=>e.n.filter(x=>x.s===s).map(x=>P(x.p)).filter(p=>p&&d.pp.includes(p)
 const NN=get("Nomeado"),RS=get("Reserva"),items=[];let last=null;NN.forEach(p=>{const h=p.inst||"Sem instrumento";if(h!==last){items.push({h});last=h}items.push({t:ln(p)})});
 if(RS.length){items.push({h:"Reserva"});RS.forEach(p=>items.push({t:`${ln(p)} (${p.inst||"–"})`}))}
 if(!items.length)items.push({t:fl.n?"Sem nomeados neste naipe.":"Sem nomeados."});
-if((y+33+40>BOT||!sim(items,y+33,BOT))&&y>M+1)np();
+const nl=e.notas?wrapT("Nota: "+e.notas.replace(/\s+/g," "),CW-10,8.5,0):[];
+const ex=nl.length?nl.length*11+3:0;if((y+33+ex+40>BOT||!sim(items,y+33+ex,BOT))&&y>M+1)np();
 R(M,y,CW,17,[.9,.94,.92]);
 T(M+5,y+12,`${fd(e.data)} · ${e.nome||e.local||"Sem nome"}`,9.5,1,BLK,CW-10);y+=17;
 T(M+5,y+10,`Local: ${e.local||"–"} · Tipo: ${e.tipo||"–"} · Viagem (ida): ${e.viag!=null?fmtV(e.viag):"–"} · Pontos por nomeação: ${peso(e).toFixed(2)} · Nomeados${fl.n?" do naipe":""}: ${NN.length} · Reserva: ${RS.length}`,8.5,0,GREY,CW-10);y+=16;
+if(nl.length){nl.forEach(l=>{T(M+5,y+10,l,8.5,0,BLK);y+=11});y+=3}
 flow(items);y+=4});
 pages.forEach((pg,i)=>{ops=pg;L(M,H-30,M+CW,H-30,[.8,.84,.82],.4);T(M,H-20,`Banda Sinfónica da Guarda Nacional Republicana · Nomeações${fl.n?" · "+nLbl(fl.n):" · geral"} · gerado em ${gen}`,7.5,0,GREY);TR(M+CW,H-20,`Página ${i+1} de ${pages.length}`,7.5,0,GREY)});
 const objs=[];const add=s=>{objs.push(s);return objs.length};
@@ -352,7 +383,7 @@ function vBk(){return `<div class="card"><h2>Cópia de segurança</h2><p class="
 <textarea id="bk">${esc(JSON.stringify(S))}</textarea>
 <div class="row"><button class="pri" onclick="rest()">Restaurar</button><button class="del" onclick="wipe()">Apagar tudo</button></div></div>`}
 function rest(){try{const d=JSON.parse($("#bk").value);if(!Array.isArray(d.people)||!Array.isArray(d.events))throw 0;S=d;mig();save();tab="eq";draw()}catch(e){alert("Texto inválido.")}}
-function wipe(){if(confirm("Apagar todos os dados?")){S={people:[],events:[]};save();draw()}}
+function wipe(){if(confirm("Apagar todos os dados?")){S={people:[],events:[]};fClr();save();draw()}}
 draw();
 try{if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js")}catch(e){}
 </script></body></html>
