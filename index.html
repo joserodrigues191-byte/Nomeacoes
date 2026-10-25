@@ -94,6 +94,8 @@ main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 #nsv .op{min-height:54px;font-size:17px;font-weight:600;border-radius:14px;text-align:left;padding:0 16px}#nsv .cn{min-height:48px;border:0;background:transparent;color:var(--mut);font-size:16px}
 .chk{display:flex;align-items:center;gap:10px;min-height:44px}.chk input{width:22px;height:22px;padding:0}
 .dcs{display:flex;flex-wrap:wrap;gap:6px}.dc{min-width:46px;min-height:50px;padding:4px 6px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:16px;font-weight:700;line-height:1.15;background:transparent;color:var(--mut)}.dc small{font-size:10px;font-weight:400;text-transform:uppercase}.dc.on{background:var(--ac);color:#04271d;border-color:var(--ac)}
+.ex{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--mut)}.ex b{color:var(--fg)}
+.ex2{padding:10px 0;border-top:1px solid var(--bd)}.ex2 h3{margin:0 0 4px;font-size:15px;color:var(--ok)}.ex2 p{margin:0 0 4px;font-size:14px}.ex2 p.mut{font-size:13px}
 </style></head><body><main>
 
 <nav id="nav"></nav>
@@ -130,6 +132,19 @@ return `<div class="cm" onclick="go('ef')" style="cursor:pointer;display:flex;al
 <div class="row" style="margin:0 0 8px">${fld("Horas de ensaio por ponto","",`<input type="number" step="0.5" min="0.5" inputmode="decimal" value="${HE()}" onchange="setHe(this.value)">`)}</div>
 <p class="mut">A cada ${HV()} h de viagem (ida e volta) soma-se mais 1 ponto, e a cada ${hTx(HE())} h de ensaio também.</p>
 <div class="row" style="margin:0"><button onclick="fl.so=true;go('eq')">Simular outros valores</button></div></div>
+<div class="card"><h2>Como se calcula</h2>
+<p class="mut" style="margin-top:0">Cada pessoa soma pontos por cada serviço para que foi nomeada. Quanto mais esforço, mais pontos. Depois compara-se com os colegas do mesmo naipe.</p>
+<div class="ex2"><h3>Cerimónias</h3><p>Cada nomeação vale <b>1 ponto</b>, mais <b>1 ponto a cada ${hTx(HV())} h de viagem</b> (ida e volta).</p>
+<p class="mut">Exemplos: 20 min de ida valem ${(1+2*20/60/HV()).toFixed(2).replace(".",",")} pontos. 5 h de ida valem ${(1+2*300/60/HV()).toFixed(2).replace(".",",")} pontos.</p>
+<p class="mut">A viagem é calculada de carro, a partir da Calçada da Ajuda, sem trânsito, e pode ser corrigida à mão. Se não estiver preenchida, conta só 1 ponto.</p></div>
+<div class="ex2"><h3>Concertos</h3><p>Contam <b>exatamente como as cerimónias</b>: 1 ponto por nomeação, mais o agravante da viagem. Vale para a Banda e para a Orquestra.</p>
+<p class="mut">Os ensaios de um concerto contam à parte, como ensaios.</p></div>
+<div class="ex2"><h3>Ensaios</h3><p>Não há viagem. Cada <b>${hTx(HE())} h de ensaio valem 1 ponto</b>. As horas são os dias marcados vezes a duração de cada ensaio.</p>
+<p class="mut">Exemplo: 5 ensaios de 2 h são 10 h e valem ${hTx(10/HE())} pontos. Uma semana de ensaios conta como 1 nomeação.</p></div>
+<div class="ex2"><h3>Reserva</h3><p>Quem está em reserva <b>não soma pontos</b>. Conta-se o que consta nas listas, não a presença efetiva.</p></div>
+<div class="ex2"><h3>Comparação</h3><p>Cada pessoa compara-se com a <b>média do seu naipe</b> (a Requinta conta no Clarinete). A Banda e a Orquestra contam da mesma forma.</p></div>
+<div class="ex2"><h3>Alertas</h3><p>Aparece <b>“acima”</b> ou <b>“abaixo”</b> quando os pontos de alguém se afastam mais de <b>${TH()}%</b> da média do naipe, com uma folga mínima de 0,5 pontos.</p></div>
+</div>
 <div class="sh">Dados</div>
 <div class="cm" onclick="go('bk')" style="cursor:pointer;display:flex;align-items:center;gap:8px"><div class="ln"><div class="tt">Cópia de segurança</div><div class="mut">Guardar ou restaurar os dados</div></div><span class="mut" style="font-size:24px">›</span></div>
 ${vBin()}${(S.log||[]).length?`<div class="cm lgd"><details><summary><b>Registo de remoções</b> (${S.log.length})</summary>${[...S.log].reverse().map(l=>`<div class="hl mut"><b>${fdt(l.t)}</b> · ${esc(l.a)}</div>`).join("")}</details></div>`:""}`}
