@@ -98,6 +98,7 @@ main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 .dcs{display:flex;flex-wrap:wrap;gap:6px}.dc{min-width:46px;min-height:50px;padding:4px 6px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:16px;font-weight:700;line-height:1.15;background:transparent;color:var(--mut)}.dc small{font-size:10px;font-weight:400;text-transform:uppercase}.dc.on{background:var(--ac);color:#04271d;border-color:var(--ac)}
 .ex{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--mut)}.ex b{color:var(--fg)}
 .ex2{padding:10px 0;border-top:1px solid var(--bd)}.ex2 h3{margin:0 0 4px;font-size:15px;color:var(--ok)}.ex2 p{margin:0 0 4px;font-size:14px}.ex2 p.mut{font-size:13px}
+.sheet{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);display:flex;align-items:flex-end}.sh2{background:var(--bg);width:100%;max-height:85vh;overflow:auto;border-radius:18px 18px 0 0;border-top:1px solid var(--bd);padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
 .fch{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}.fch button{border-radius:18px;min-height:36px;padding:4px 14px;font-size:14px}.fch button.on{font-weight:700}
 </style></head><body><main>
 
@@ -185,8 +186,8 @@ function vEfL(){const L=[...S.people].sort(cmpH);
 return `<div class="card"><h2>Efetivo (${L.length})</h2>`+(L.map((p,i)=>p.id===edId?`<div class="pl2">${frm("e",p)}<div class="row"><button class="pri" onclick="saveE()">Guardar</button><button onclick="edId=null;draw()">Cancelar</button></div></div>`
 :`<div class="pl2 pr"><span style="flex:0 0 30px;text-align:right;color:var(--ok);font-weight:700;margin-right:8px">${esc(p.adido||"–")}</span><span style="flex:0 0 48px;color:var(--mut);font-size:13px">${esc(p.posto||"–")}</span><span class="ln"><b>${esc(p.nome)}</b><br><span class="mut" style="font-size:12px">${esc(p.ordem||"–")} · ${esc(CATS.includes(p.cat)?p.cat:(p.inst||"Sem instrumento"))}${p.cat===GH?" · Chefia GH":""}</span></span><div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${p.id}')">⋯</button><div class="menu" id="m_${p.id}" hidden><button onclick="edId='${p.id}';draw()">Editar</button><button class="del" onclick="delP('${p.id}')">Remover</button></div></div></div>`).join("")||`<p class="mut">Ainda sem efetivos.</p>`)+`</div>`}
 function vEfN(){const L=[...S.people].sort(cmpH),v=x=>esc(x||"–");
-return (fl.nf?`<div class="card"><h2>Adicionar efetivo</h2>${frm("n",{posto:lastAdd.posto,inst:lastAdd.inst,g:lastAdd.g})}
-<div class="row"><button class="pri" onclick="addP()">Adicionar</button><button onclick="fl.nf=false;draw()">Fechar</button></div></div>`:`<button class="pri nb" style="margin:0 0 12px" onclick="fl.nf=true;draw()">+ Novo efetivo</button>`)+`
+return `<button class="pri nb" style="margin:0 0 12px" onclick="fl.nf=true;draw()">+ Novo efetivo</button>`+(fl.nf?`<div class="sheet" onclick="if(event.target===this){fl.nf=false;draw()}"><div class="sh2"><h2 style="margin-top:0">Novo efetivo</h2>${frm("n",{posto:lastAdd.posto,inst:lastAdd.inst,g:lastAdd.g})}
+<div class="row"><button class="pri" onclick="addP()">Adicionar</button><button onclick="fl.nf=false;draw()">Fechar</button></div></div></div>`:"")+`
 <div class="card"><h2>Cadastro (${L.length})</h2>
 ${naipes(true).map(n=>{const G=L.filter(p=>grp(p)===n);if(!G.length)return"";
 return `<details class="nd" ${(fl.cc&&fl.cc[n])||G.some(p=>p.id===edId)?"open":""} ontoggle="(fl.cc=fl.cc||{})['${esc(n)}']=this.open"><summary><span class="tt">${esc(nLbl(n))}</span> <span class="mut">${G.length}</span></summary>
