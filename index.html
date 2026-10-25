@@ -216,18 +216,104 @@ ${R.length?`<div class="ih">Reserva</div>${R.map(p=>`<div class="pl2">${ln(p)} <
 const HV=()=>{const h=S.cfg&&parseFloat(S.cfg.h);return h>0?h:4};
 const peso=e=>1+2*(e.viag||0)/60/HV();
 function setH(v){const h=parseFloat(String(v).replace(",","."));if(!(h>0)){alert("Indique um número de horas maior que zero.");return draw()}S.cfg=S.cfg||{};S.cfg.h=h;save();draw()}
-function vEq(){const ev=S.events.filter(e=>(!fl.a||e.data>=fl.a)&&(!fl.b||e.data<=fl.b)),sv=ev.filter(e=>e.viag==null&&e.n.some(x=>x.s==="Nomeado")).length;
+function calcEq(){const ev=S.events.filter(e=>(!fl.a||e.data>=fl.a)&&(!fl.b||e.data<=fl.b)),sv=ev.filter(e=>e.viag==null&&e.n.some(x=>x.s==="Nomeado")).length;
 const r=S.people.map(p=>{let f=0,rs=0,vg=0,pt=0;ev.forEach(e=>{const x=e.n.find(n=>n.p===p.id);if(!x)return;if(x.s==="Nomeado"){f++;vg+=2*(e.viag||0);pt+=peso(e)}else if(x.s==="Reserva")rs++});return{p,f,rs,vg,pt}}).sort((a,b)=>b.pt-a.pt||b.f-a.f);
 const tot=r.reduce((s,x)=>s+x.pt,0),avg=r.length?tot/r.length:0,mx=Math.max(1e-9,...r.map(x=>x.pt)),fair=r.length?100/r.length:0;
-const fl2=x=>{if(!avg)return"";const t=Math.max(.5,avg*.25);return x.pt>avg+t?`<span class="tag hi">acima</span>`:x.pt<avg-t?`<span class="tag lo">abaixo</span>`:`<span class="tag ok">na média</span>`};
+return{ev,sv,r,tot,avg,mx,fair}}
+const stT=(x,avg)=>{if(!avg)return"";const t=Math.max(.5,avg*.25);return x.pt>avg+t?"acima":x.pt<avg-t?"abaixo":"na média"};
+function vEq(){const{ev,sv,r,tot,avg,mx,fair}=calcEq();
+const fl2=x=>{const t=stT(x,avg);return t?`<span class="tag ${t==="acima"?"hi":t==="abaixo"?"lo":"ok"}">${t}</span>`:""};
 return `<div class="card"><h2>Período</h2><div class="row"><input type="date" value="${fl.a}" onchange="fl.a=this.value;draw()"><input type="date" value="${fl.b}" onchange="fl.b=this.value;draw()"><button onclick="fl={a:'',b:''};draw()">Limpar</button></div>
-<p class="mut">${ev.length} cerimónias no período. Contam as nomeações que constam nas listas, não a presença efetiva.</p></div>
+<div class="row"><button class="pri" onclick="exportPDF()">Exportar PDF</button></div>
+<p class="mut">${ev.length} cerimónias no período. Contam as nomeações que constam nas listas, não a presença efetiva. O PDF contém nomes e números de ordem: trate-o como informação sensível.</p></div>
 <div class="card"><h2>Como se calcula o esforço</h2>
 <p class="mut">Cada nomeação vale 1 ponto, mais um agravante pela viagem, contando ida e volta. A cada <input type="number" step="0.5" min="0.5" inputmode="decimal" value="${HV()}" style="width:70px;padding:3px 6px" onchange="setH(this.value)"> horas de viagem (ida e volta) soma-se mais 1 ponto. Exemplo: com 4 horas, uma cerimónia com 20 min de ida vale ${(1+2*20/60/HV()).toFixed(2)} pontos e uma com 5 h de ida vale ${(1+2*300/60/HV()).toFixed(2)}. A reserva não conta.</p>
 ${sv?`<p class="mut"><b>${sv}</b> cerimónia(s) sem viagem preenchida contam só 1 ponto.</p>`:""}</div>
 <div class="card"><div class="tw"><table><tr><th>Pessoa</th><th>Nomeações</th><th>Esforço</th><th></th><th>Viagem</th><th>Reserva</th><th>Estado</th></tr>
 ${r.map(x=>`<tr><td>${esc(x.p.posto)} ${esc(x.p.nome)} <span class="mut">${esc(x.p.inst)}</span></td><td>${x.f}</td><td>${tot?(x.pt/tot*100).toFixed(1):"0.0"}%</td><td><div class="bar"><i style="width:${x.pt/mx*100}%"></i></div></td><td>${x.vg?fmtV(x.vg):"–"}</td><td>${x.rs}</td><td>${fl2(x)}</td></tr>`).join("")||`<tr><td class="mut">Sem dados.</td></tr>`}</table></div>
 <p class="mut">Partilha igual: ${fair.toFixed(1)}% por pessoa. O alerta dispara quando os pontos de uma pessoa se afastam mais de 25% da média.</p></div>`}
+/* ===== Exportar PDF ===== */
+const HWR=[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,761,556,556,222,556,333,1000,556,556,333,1000,667,333,1000,556,611,556,556,222,222,333,333,350,556,1000,333,1000,500,333,944,556,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500],HWB=[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,761,556,556,278,556,500,1000,556,556,333,1000,667,333,1000,556,611,556,556,278,278,500,500,350,556,1000,333,1000,556,333,944,556,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556];
+const WA={8211:150,8212:151,8226:149,8220:147,8221:148,8216:145,8217:146,8230:133,8364:128};
+function enc(t){let o="";for(const ch of String(t==null?"":t)){let c=ch.codePointAt(0);if(WA[c])c=WA[c];else if(c===9)c=32;else if(c<32||c>255)c=63;o+=String.fromCharCode(c)}return o}
+function tw(s,z,b){const t=b?HWB:HWR;let w=0;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);w+=(c>=32&&c<=255?t[c-32]:556)}return w*z/1000}
+function fit(raw,w,z,b){let e=enc(raw);if(tw(e,z,b)<=w)return e;while(e.length>1&&tw(e+"...",z,b)>w)e=e.slice(0,-1);return e.replace(/\s+$/,"")+"..."}
+function wrapT(raw,w,z,b){const out=[];let cur="";enc(raw).split(" ").forEach(p=>{const t=cur?cur+" "+p:p;if(tw(t,z,b)<=w||!cur)cur=t;else{out.push(cur);cur=p}});if(cur)out.push(cur);return out}
+const pe=s=>s.replace(/([\\()])/g,"\\$1");
+function buildPDF(){
+const d=calcEq(),W=842,H=595,M=36,BOT=H-M-14,CW=W-2*M;
+const GREEN=[0,.29,.2],GREY=[.36,.41,.39],BLK=[.08,.1,.09],RED=[.72,.2,.15],AMB=[.55,.4,.05],OKC=[.1,.45,.3],WHT=[1,1,1];
+const pages=[];let ops=null,y=M;
+const np=()=>{ops=[];pages.push(ops);y=M};
+const c3=c=>c.map(v=>v.toFixed(3)).join(" ");
+const T=(x,yb,raw,z,b,c,mw)=>{const e=mw?fit(raw,mw,z,b):enc(raw);ops.push(`BT /${b?"F2":"F1"} ${z} Tf ${c3(c||BLK)} rg ${x.toFixed(2)} ${(H-yb).toFixed(2)} Td (${pe(e)}) Tj ET`)};
+const TR=(xr,yb,raw,z,b,c)=>{const e=enc(raw);T(xr-tw(e,z,b),yb,raw,z,b,c)};
+const R=(x,yt,w,h,c)=>ops.push(`${c3(c)} rg ${x.toFixed(2)} ${(H-yt-h).toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re f`);
+const L=(x1,y1,x2,y2,c,wd)=>ops.push(`${c3(c)} RG ${wd} w ${x1.toFixed(2)} ${(H-y1).toFixed(2)} m ${x2.toFixed(2)} ${(H-y2).toFixed(2)} l S`);
+const now=new Date(),p2=n=>String(n).padStart(2,"0"),gen=`${p2(now.getDate())}/${p2(now.getMonth()+1)}/${now.getFullYear()} às ${p2(now.getHours())}:${p2(now.getMinutes())}`;
+const evs=[...d.ev].sort((a,b)=>String(a.data).localeCompare(String(b.data)));
+const ds=evs.map(e=>e.data).filter(Boolean).sort();
+const per=(fl.a||fl.b)?(fl.a&&fl.b?`de ${fd(fl.a)} a ${fd(fl.b)}`:fl.a?`desde ${fd(fl.a)}`:`até ${fd(fl.b)}`):`todas as cerimónias registadas${ds.length?` (de ${fd(ds[0])} a ${fd(ds[ds.length-1])})`:""}`;
+np();
+T(M,y+10,"Banda Sinfónica da Guarda Nacional Republicana",11,1,GREEN);y+=18;
+T(M,y+16,"Resumo de nomeações e esforço",17,1,BLK);y+=26;
+T(M,y+9,`Período: ${per}`,9,0,GREY);y+=13;
+T(M,y+9,`Gerado em ${gen} · ${evs.length} cerimónia(s) · ${S.people.length} efetivo(s)`,9,0,GREY);y+=17;
+const crit=`Critério de cálculo: cada nomeação vale 1 ponto, mais 1 ponto por cada ${HV()} ${HV()===1?"hora":"horas"} de viagem, contando ida e volta (a viagem de ida é calculada a partir da Calçada da Ajuda). A reserva não conta. Contam as nomeações que constam nas listas, e não a presença efetiva. Partilha igual: ${d.fair.toFixed(1)}% por pessoa. Marca-se "acima" ou "abaixo" quando os pontos de uma pessoa se afastam mais de 25% da média.`+(d.sv?` ${d.sv} cerimónia(s) sem viagem preenchida contam só 1 ponto.`:"");
+wrapT(crit,CW,8.5,0).forEach(l=>{T(M,y+8,l,8.5,0,GREY);y+=11.5});y+=8;
+const sec=(t)=>{T(M,y+11,t,11,1,GREEN);y+=15;L(M,y,M+CW,y,GREEN,.8);y+=6};
+sec("1. Resumo por pessoa");
+const cols=[{h:"Posto",w:46},{h:"Nº Adido",w:52},{h:"Nº Ordem",w:62},{h:"Nome",w:232},{h:"Instrumento",w:92},{h:"Nomeações",w:66,r:1},{h:"Esforço",w:54,r:1},{h:"Viagem",w:70,r:1},{h:"Reserva",w:46,r:1},{h:"Estado",w:50}];
+const head=()=>{R(M,y,CW,16,GREEN);let x=M;cols.forEach(c=>{if(c.r)TR(x+c.w-4,y+11.5,c.h,8.5,1,WHT);else T(x+4,y+11.5,c.h,8.5,1,WHT,c.w-6);x+=c.w});y+=16};
+head();
+d.r.forEach((q,i)=>{if(y+14>BOT){np();head()}
+if(i%2)R(M,y,CW,14,[.945,.96,.95]);
+const st=stT(q,d.avg),vals=[q.p.posto||"–",q.p.adido||"–",q.p.ordem||"–",q.p.nome,q.p.inst||"–",String(q.f),(d.tot?(q.pt/d.tot*100).toFixed(1):"0.0")+"%",q.vg?fmtV(q.vg):"–",String(q.rs),st||"–"];
+let x=M;cols.forEach((c,k)=>{const col=k===9?(st==="acima"?RED:st==="abaixo"?AMB:OKC):BLK;if(c.r)TR(x+c.w-4,y+10,vals[k],8.5,0,col);else T(x+4,y+10,vals[k],8.5,k===9&&st!=="na média"&&st!=="",col,c.w-6);x+=c.w});y+=14});
+if(!d.r.length){T(M+4,y+10,"Sem efetivos registados.",8.5,0,GREY);y+=14}
+y+=14;
+if(y+90>BOT)np();
+sec("2. Detalhe por cerimónia");
+const sim=(items,top,lim)=>{let c=0,yy=top;for(const it of items){const lh=it.h?14:10.5,need=lh+(it.h?10.5:0);if(yy+need>lim){c++;yy=top;if(c>2)return false}yy+=lh}return true};
+const flow=(items)=>{const gap=14,cw=(CW-2*gap)/3;let c=0,top=y,yy=y,mx=y,lim=BOT;
+for(let l=top+40;l<=BOT;l+=3)if(sim(items,top,l)){lim=l;break}
+for(const it of items){const lh=it.h?14:10.5,need=lh+(it.h?10.5:0);
+if(yy+need>lim){c++;yy=top;if(c>2){np();top=M;yy=top;c=0;mx=top;lim=BOT}}
+const x=M+c*(cw+gap);
+if(it.h){T(x,yy+lh-3,it.h,8.5,1,GREEN,cw);L(x,yy+lh,x+cw,yy+lh,[.75,.8,.78],.4)}else T(x,yy+lh-2.5,it.t,8,0,BLK,cw);
+yy+=lh;mx=Math.max(mx,yy)}
+y=mx+6};
+const ln=p=>`${p.posto||"–"}; ${p.adido||"–"}; ${p.ordem||"–"}; ${p.nome}`;
+evs.forEach((e,i)=>{
+const get=s=>e.n.filter(x=>x.s===s).map(x=>P(x.p)).filter(Boolean).sort(cmpI);
+const items=[];let last=null;get("Nomeado").forEach(p=>{const h=p.inst||"Sem instrumento";if(h!==last){items.push({h});last=h}items.push({t:ln(p)})});
+const RS=get("Reserva");if(RS.length){items.push({h:"Reserva"});RS.forEach(p=>items.push({t:`${ln(p)} (${p.inst||"–"})`}))}
+if(!items.length)items.push({t:"Sem nomeados."});
+if((y+33+40>BOT||!sim(items,y+33,BOT))&&y>M+1)np();
+R(M,y,CW,17,[.9,.94,.92]);
+T(M+5,y+12,`${fd(e.data)} · ${e.nome||e.local||"Sem nome"}`,9.5,1,BLK,CW-10);y+=17;
+const nn=e.n.filter(x=>x.s==="Nomeado").length,rr=e.n.filter(x=>x.s==="Reserva").length;
+T(M+5,y+10,`Local: ${e.local||"–"} · Tipo: ${e.tipo||"–"} · Viagem (ida): ${e.viag!=null?fmtV(e.viag):"–"} · Pontos por nomeação: ${peso(e).toFixed(2)} · Nomeados: ${nn} · Reserva: ${rr}`,8.5,0,GREY,CW-10);y+=16;
+flow(items);y+=4});
+pages.forEach((pg,i)=>{ops=pg;L(M,H-30,M+CW,H-30,[.8,.84,.82],.4);T(M,H-20,`Banda Sinfónica da Guarda Nacional Republicana · Nomeações · gerado em ${gen}`,7.5,0,GREY);TR(M+CW,H-20,`Página ${i+1} de ${pages.length}`,7.5,0,GREY)});
+const objs=[];const add=s=>{objs.push(s);return objs.length};
+add("<< /Type /Catalog /Pages 2 0 R >>");add("");
+add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+const kids=[];
+pages.forEach(pg=>{const c=pg.join("\n"),cid=add(`<< /Length ${c.length} >>\nstream\n${c}\nendstream`),pid=add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${cid} 0 R >>`);kids.push(pid+" 0 R")});
+objs[1]=`<< /Type /Pages /Kids [${kids.join(" ")}] /Count ${kids.length} >>`;
+let out="%PDF-1.4\n";const off=[];
+objs.forEach((o,i)=>{off.push(out.length);out+=`${i+1} 0 obj\n${o}\nendobj\n`});
+const xr=out.length;
+out+=`xref\n0 ${objs.length+1}\n0000000000 65535 f \n`+off.map(n=>String(n).padStart(10,"0")+" 00000 n \n").join("")+`trailer\n<< /Size ${objs.length+1} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`;
+const u=new Uint8Array(out.length);for(let i=0;i<out.length;i++)u[i]=out.charCodeAt(i)&255;return u}
+async function exportPDF(){const d=calcEq();if(!d.ev.length)return alert("Não há cerimónias no período selecionado.");
+let u;try{u=buildPDF()}catch(e){console.error(e);return alert("Não foi possível gerar o PDF.")}
+const nm="Nomeacoes_"+new Date().toISOString().slice(0,10)+".pdf",f=new File([u],nm,{type:"application/pdf"});
+try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:nm});return}}catch(e){if(e&&e.name==="AbortError")return}
+const url=URL.createObjectURL(f),a=document.createElement("a");a.href=url;a.download=nm;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
+
 /* Backup */
 function vBk(){return `<div class="card"><h2>Cópia de segurança</h2><p class="mut">Os dados ficam só neste dispositivo e navegador. Copie o texto abaixo e guarde-o num local seguro. Para restaurar, cole-o e carregue em Restaurar.</p>
 <textarea id="bk">${esc(JSON.stringify(S))}</textarea>
