@@ -87,6 +87,8 @@ main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 .lkb{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:52px;border:0;background:transparent;color:var(--ok);font-size:16px;font-weight:600;padding:0 4px;border-radius:0}
 .nb{width:100%;min-height:50px;margin-top:10px;font-size:16px;font-weight:700;border-radius:12px;color:#04271d}
 .nd{border-top:1px solid var(--bd);padding:6px 0}.nd:first-of-type{border-top:0}.nd summary{cursor:pointer;min-height:40px;display:flex;align-items:center;gap:8px;list-style:none}.nd summary::-webkit-details-marker{display:none}.nd summary:before{content:"▾";color:var(--mut)}.nd:not([open]) summary:before{content:"▸"}
+#ts{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;background:#eef4f0;color:#04271d;border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:0 6px 18px rgba(0,0,0,.45)}#ts[hidden]{display:none}#ts button{background:#04271d;color:#eef4f0;border:0;min-height:40px;padding:0 16px;font-weight:700}
+.wr2{background:#3a2f0e;border:1px solid var(--lo);border-radius:12px;padding:10px 14px;color:#f3d98f;font-size:14px;margin:6px 0}
 </style></head><body><main>
 
 <nav id="nav"></nav>
@@ -114,7 +116,7 @@ const IC={ev:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',eq:
 function nav(){const ie=tab==="ev",det=ie&&(edit||vw),all=ie&&cl&&!det,back=det?[cl?"‹ Todas":"‹ Cerimónias","edit=null;vw=null;draw()"]:all?["‹ Cerimónias","cl=false;draw()"]:(tab==="ef"||tab==="bk")?["‹ Mais","go('mais')"]:null;
 $("#nav").innerHTML=`<div class="bnm">Banda Sinfónica da Guarda Nacional Republicana</div>${back?`<button class="bkb" onclick="${back[1]}">${back[0]}</button>`:""}${det?"":`<div class="hr2"><h1 class="sec">${all?"Todas":(TT[tab]||"")}</h1>${all?`<button class="pri" onclick="newEv()">+ Nova</button>`:""}</div>`}`;
 $("#tb").innerHTML=[["ev","Cerimónias"],["eq","Equilíbrio"],["ec","Evolução"],["mais","Mais"]].map(([k,n])=>`<button class="${tab===k||(k==="mais"&&(tab==="ef"||tab==="bk"))?"on":""}" onclick="go('${k}')"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>${n}</button>`).join("")}
-function go(t){tab=t;cl=false;edit=null;edId=null;vw=null;if(t==="eq")fl.n="";draw();window.scrollTo(0,0)}
+function go(t){{const z=$("#ts");if(z)z.hidden=true}tab=t;cl=false;edit=null;edId=null;vw=null;if(t==="eq")fl.n="";draw();window.scrollTo(0,0)}
 function draw(){nav();$("#v").innerHTML={mais:vMais,ec:vEc,eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]();loadImgs()}
 function vMais(){const n=S.people.length;
 return `<div class="cm" onclick="go('ef')" style="cursor:pointer;display:flex;align-items:center;gap:8px"><div class="ln"><div class="tt">Efetivos</div><div class="mut">${n} ${n===1?"pessoa":"pessoas"} · cadastro</div></div><span class="mut" style="font-size:24px">›</span></div>
@@ -124,7 +126,19 @@ return `<div class="cm" onclick="go('ef')" style="cursor:pointer;display:flex;al
 <div class="row" style="margin:0"><button onclick="fl.so=true;go('eq')">Simular outros valores</button></div></div>
 <div class="sh">Dados</div>
 <div class="cm" onclick="go('bk')" style="cursor:pointer;display:flex;align-items:center;gap:8px"><div class="ln"><div class="tt">Cópia de segurança</div><div class="mut">Guardar ou restaurar os dados</div></div><span class="mut" style="font-size:24px">›</span></div>
-${(S.log||[]).length?`<div class="cm lgd"><details><summary><b>Registo de remoções</b> (${S.log.length})</summary>${[...S.log].reverse().map(l=>`<div class="hl mut"><b>${fdt(l.t)}</b> · ${esc(l.a)}</div>`).join("")}</details></div>`:""}`}
+${vBin()}${(S.log||[]).length?`<div class="cm lgd"><details><summary><b>Registo de remoções</b> (${S.log.length})</summary>${[...S.log].reverse().map(l=>`<div class="hl mut"><b>${fdt(l.t)}</b> · ${esc(l.a)}</div>`).join("")}</details></div>`:""}`}
+/* Reciclagem */
+function bin(k,d,refs){const id=uid();(S.bin=S.bin||[]).push({id,t:new Date().toISOString(),k,d,refs:refs||[]});return id}
+function binDel(id,q){const b=(S.bin||[]).find(x=>x.id===id);if(!b)return;if(!q&&!confirm("Apagar definitivamente? Não poderá ser recuperado."))return;if(b.k==="e")(b.d.fotos||[]).forEach(f=>{fDel(f.id);delete urls[f.id]});S.bin=S.bin.filter(x=>x.id!==id);save();if(!q)draw()}
+function binRest(id){const b=(S.bin||[]).find(x=>x.id===id);if(!b)return;
+if(b.k==="e")S.events.push(b.d);else{if(b.d.ordem&&S.people.some(q=>q.ordem===b.d.ordem))return alert("Já existe outro efetivo com este Nº Ordem. Não é possível restaurar.");S.people.push(b.d);b.refs.forEach(r=>{const e=EV(r.e);if(e&&!e.n.some(x=>x.p===b.d.id))e.n.push({p:b.d.id,s:r.s})})}
+S.bin=S.bin.filter(x=>x.id!==id);(S.log=S.log||[]).push({t:new Date().toISOString(),a:"Restaurado: "+(b.k==="e"?(b.d.nome||b.d.local||"cerimónia"):b.d.posto+" "+b.d.nome)});save();draw()}
+function purgeBin(){const lim=Date.now()-30*864e5;(S.bin||[]).filter(b=>new Date(b.t)<lim).forEach(b=>binDel(b.id,true))}
+let tmr=null;
+function toast(msg,fn){let t=$("#ts");if(!t){t=document.createElement("div");t.id="ts";document.body.appendChild(t)}
+window._tu=()=>{t.hidden=true;clearTimeout(tmr);fn()};t.innerHTML=`<span>${esc(msg)}</span><button onclick="_tu()">Desfazer</button>`;t.hidden=false;clearTimeout(tmr);tmr=setTimeout(()=>t.hidden=true,8000)}
+function vBin(){const B=[...(S.bin||[])].reverse();if(!B.length)return"";
+return `<div class="cm lgd"><details><summary><b>Reciclagem</b> (${B.length})</summary><p class="mut">Apagado há menos de 30 dias. Passado esse tempo é removido de vez.</p>${B.map(b=>`<div class="hl"><div class="tt">${b.k==="e"?"Cerimónia · "+fd(b.d.data)+" · "+esc(b.d.nome||b.d.local||"Sem nome"):"Efetivo · "+esc(b.d.posto)+" "+esc(b.d.nome)}</div><div class="mut">${fdt(b.t)}</div><div class="row" style="margin:6px 0 0"><button class="pri" onclick="binRest('${b.id}')">Restaurar</button><button class="del" onclick="binDel('${b.id}')">Apagar de vez</button></div></div>`).join("")}</details></div>`}
 /* Efetivos */
 function nk(t){return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[\s.]/g,"")}
 function fixP(p){if(p.adido===undefined){const o=String(p.ordem||"");if(o&&o.length!==7){p.adido=o;p.ordem=""}else p.adido=""}
@@ -140,8 +154,8 @@ const rk=p=>{const i=POSTOS.indexOf(p.posto);return i<0?-1:i};
 const ad=p=>p.adido?parseInt(p.adido,10):Infinity;
 function cmpH(a,b){const d=rk(b)-rk(a);if(d)return d;const x=ad(a),y=ad(b);if(x!==y)return x<y?-1:1;return String(a.nome).localeCompare(String(b.nome),"pt")}
 function vEf(){const L=[...S.people].sort(cmpH),v=x=>esc(x||"–");
-return `<div class="card"><h2>Adicionar efetivo</h2>${frm("n",{posto:lastAdd.posto,inst:lastAdd.inst})}
-<div class="row"><button class="pri" onclick="addP()">Adicionar</button></div></div>
+return (fl.nf?`<div class="card"><h2>Adicionar efetivo</h2>${frm("n",{posto:lastAdd.posto,inst:lastAdd.inst})}
+<div class="row"><button class="pri" onclick="addP()">Adicionar</button><button onclick="fl.nf=false;draw()">Fechar</button></div></div>`:`<button class="pri nb" style="margin:0 0 12px" onclick="fl.nf=true;draw()">+ Novo efetivo</button>`)+`
 <div class="card"><h2>Cadastro (${L.length})</h2>
 ${naipes().map(n=>{const G=L.filter(p=>n==="__none"?!p.inst:nOf(p.inst)===n);if(!G.length)return"";
 return `<details class="nd" ${(fl.cc&&fl.cc[n])||G.some(p=>p.id===edId)?"open":""} ontoggle="(fl.cc=fl.cc||{})['${esc(n)}']=this.open"><summary><span class="tt">${esc(nLbl(n))}</span> <span class="mut">${G.length}</span></summary>
@@ -167,7 +181,7 @@ if(S.people.some(q=>q.id!==id&&q.ordem===v)){alert("Já existe outro efetivo com
 else if(k==="nome"){if(!v.trim()){alert("O nome não pode ficar vazio.");return draw()}p.nome=v.trim()}
 else if(k==="adido")p.adido=v.replace(/\D/g,"");
 else p[k]=v;save()}
-function delP(id){if(!confirm("Remover este efetivo e os seus registos?"))return;{const p=P(id);if(p)(S.log=S.log||[]).push({t:new Date().toISOString(),a:`Efetivo removido: ${p.posto} ${p.nome}`})}S.people=S.people.filter(p=>p.id!==id);S.events.forEach(e=>e.n=e.n.filter(x=>x.p!==id));save();draw()}
+function delP(id){if(!confirm("Remover este efetivo e os seus registos?"))return;{const p=P(id);if(p)(S.log=S.log||[]).push({t:new Date().toISOString(),a:`Efetivo removido: ${p.posto} ${p.nome}`})}const pp0=P(id),rf=S.events.flatMap(e=>{const x=e.n.find(q=>q.p===id);return x?[{e:e.id,s:x.s}]:[]}),bid=pp0?bin("p",pp0,rf):null;S.people=S.people.filter(p=>p.id!==id);S.events.forEach(e=>e.n=e.n.filter(x=>x.p!==id));save();draw();if(bid)toast("Efetivo removido",()=>binRest(bid))}
 /* Cerimónias */
 let vw=null;
 const fd=d=>d?d.split("-").reverse().join("/"):"";
@@ -201,7 +215,7 @@ function evR(){$("#evl").innerHTML=evL();$("#evc").textContent=evC()}
 function evL(){const L=S.events.filter(evM);const ML=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];return L.map((e,i)=>{const mh=(i===0||L[i-1].data.slice(0,7)!==e.data.slice(0,7))&&e.data?`<div class="sh">${ML[+e.data.slice(5,7)-1]||""} ${e.data.slice(0,4)}</div>`:"";const n=e.n.filter(x=>x.s==="Nomeado").length;return mh+`<div class="pl2 pr cm"><div class="dt" onclick="vw='${e.id}';draw()"><b>${e.data?e.data.slice(8,10):"–"}</b><span>${e.data?ML[+e.data.slice(5,7)-1].slice(0,3):""}</span></div><div class="ln" onclick="vw='${e.id}';draw()" style="cursor:pointer"><div class="tt">${esc(e.nome||e.local||"Sem nome")}</div><div class="mut">${e.local&&e.nome?esc(e.local)+" · ":""}${e.viag!=null?"viagem "+fmtV(e.viag)+" · ":""}${n} nomeados${e.montada?"":" · <span class=\"lo\">por montar</span>"}</div></div>
 <div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${e.id}')">⋯</button><div class="menu" id="m_${e.id}" hidden><button onclick="edit='${e.id}';draw()">Editar</button><button class="del" onclick="delE('${e.id}')">Remover</button></div></div></div>`}).join("")||`<p class="mut">${S.events.length?"Nenhuma cerimónia corresponde à pesquisa.":"Ainda sem cerimónias."}</p>`}
 function newEv(){const e={id:uid(),data:new Date().toISOString().slice(0,10),nome:"",local:"",tipo:"Cerimónia",viag:null,n:[],montada:false};S.events.push(e);edit=e.id;vw=null;save();draw()}
-function delE(id){if(!confirm("Apagar esta cerimónia?"))return;const e=EV(id);(e&&e.fotos||[]).forEach(f=>{fDel(f.id);delete urls[f.id]});(S.log=S.log||[]).push({t:new Date().toISOString(),a:`Cerimónia apagada: ${e?fd(e.data)+" · "+(e.nome||e.local||"Sem nome")+" ("+e.n.filter(x=>x.s==="Nomeado").length+" nomeados)":id}`});S.events=S.events.filter(e=>e.id!==id);save();draw()}
+function delE(id){if(!confirm("Apagar esta cerimónia?"))return;const e=EV(id);const bid=e?bin("e",e):null;(S.log=S.log||[]).push({t:new Date().toISOString(),a:`Cerimónia apagada: ${e?fd(e.data)+" · "+(e.nome||e.local||"Sem nome")+" ("+e.n.filter(x=>x.s==="Nomeado").length+" nomeados)":id}`});S.events=S.events.filter(e=>e.id!==id);save();draw();if(bid)toast("Cerimónia apagada",()=>binRest(bid))}
 
 /* Fotos das listas (IndexedDB, só neste dispositivo) */
 const odb=()=>new Promise((ok,ko)=>{if(!window.indexedDB)return ko("sem IndexedDB");const r=indexedDB.open("nbf",1);r.onupgradeneeded=()=>r.result.createObjectStore("f");r.onsuccess=()=>ok(r.result);r.onerror=()=>ko(r.error)});
@@ -222,10 +236,15 @@ o.innerHTML=`<img src="${u}" alt="Lista original"><button onclick="event.stopPro
 const thumbs=(e,rm)=>(e.fotos||[]).map(f=>`<span class="th"><img data-f="${f.id}" alt="" onclick="verFoto('${f.id}')">${rm?`<button class="del" onclick="delFoto('${f.id}')" aria-label="Remover foto">✕</button>`:""}</span>`).join("");
 function stl(s){return s==="Nomeado"?["n","Nomeado"]:s==="Reserva"?["r","Reserva"]:["","—"]}
 function cnt(e){const n=e.n.filter(x=>x.s==="Nomeado").length,r=e.n.filter(x=>x.s==="Reserva").length;return `${n} nomeados · ${r} em reserva`}
-function fEv(){const e=EV(edit);if(!e){edit=null;return vEv()}
+let bmC={};
+function balMap(ex){const sa=fl.a,sb=fl.b,m={};fl.a="";fl.b="";try{naipes().forEach(v=>{const d=calcEq(v,{ex});d.r.forEach(x=>{m[x.p.id]={pt:x.pt,st:stT(x,d.avg)}})})}finally{fl.a=sa;fl.b=sb}return m}
+function avHtml(e){const L=e.n.filter(x=>x.s==="Nomeado").map(x=>P(x.p)).filter(p=>p&&bmC[p.id]&&bmC[p.id].st==="acima");
+return L.length?`<div class="wr2">⚠ Já acima da média no seu naipe: <b>${L.map(p=>esc(p.posto+" "+p.nome)).join(", ")}</b></div>`:`<p class="mut" style="margin:6px 0">Nenhum nomeado está acima da média.</p>`}
+function avUpd(){const e=EV(edit),el=$("#av");if(e&&el)el.innerHTML=avHtml(e)}
+function fEv(){const e=EV(edit);if(!e){edit=null;return vEv()}bmC=balMap(e.id);
 const st=id=>(e.n.find(x=>x.p===id)||{}).s||"";let last=null;
 const rows=[...S.people].sort(cmpI).map(p=>{const h=p.inst||"Sem instrumento",t=h!==last?`<div class="ih">${esc(h)}</div>`:"";last=h;const[c,l]=stl(st(p.id));
-return t+`<div class="pk ${c}" id="r_${p.id}" onclick="cyc('${p.id}')"><span class="ln">${esc(p.posto||"–")} · ${esc(p.adido||"–")} · ${esc(p.nome)}</span><span class="bd" id="b_${p.id}">${l}</span></div>`}).join("");
+return t+`<div class="pk ${c}" id="r_${p.id}" onclick="cyc('${p.id}')"><span class="ln">${esc(p.posto||"–")} · ${esc(p.adido||"–")} · ${esc(p.nome)}${bmC[p.id]&&bmC[p.id].st&&bmC[p.id].st!=="na média"?` <span class="tag ${bmC[p.id].st==="acima"?"hi":"lo"}">${bmC[p.id].st}</span>`:""}</span><span class="bd" id="b_${p.id}">${l}</span></div>`}).join("");
 return `<div class="card"><h2>${e.montada?"Editar cerimónia":"Nova cerimónia"}</h2><div class="row">${fld("Nome da cerimónia","",`<input value="${esc(e.nome)}" placeholder="Ex.: Cartaxo – CTER Santarém" onchange="up('nome',this.value)">`)}</div>
 <div class="g3" style="grid-template-columns:1fr 1fr">
 ${fld("Local","",`<input value="${esc(e.local)}" placeholder="Ex.: Cartaxo" onchange="up('local',this.value);calcViagem()">`)}
@@ -243,6 +262,7 @@ ${fld("Tipo","",`<input value="${esc(e.tipo)}" onchange="up('tipo',this.value)">
 <div class="card"><h2>Montar a banda</h2>
 <p class="mut">Toque numa pessoa para a marcar: uma vez <b>Nomeado</b>, duas vezes <b>Reserva</b>, três vezes para retirar.</p>
 <p id="cnt"><b>${cnt(e)}</b></p>
+<div id="av">${avHtml(e)}</div>
 ${rows||`<p class="mut">Adicione primeiro os efetivos no separador Efetivos.</p>`}
 <div class="row" style="margin-top:12px"><button class="pri" onclick="montar()">Montar Banda</button><button onclick="edit=null;draw()">Voltar</button></div></div>`}
 const fmtV=m=>m<60?m+"min":Math.floor(m/60)+"h "+String(m%60).padStart(2,"0")+"min";
@@ -269,7 +289,7 @@ const LAB={nome:"Nome",local:"Local",data:"Data",tipo:"Tipo"};
 function up(k,v){const e=EV(edit);if(!e)return;const o=e[k];e[k]=v;if(o!==v&&(o||v)){if(k==="notas")lg(e,"Notas alteradas");else if(LAB[k]){const f=k==="data"?fd:(x=>x||"–");lg(e,`${LAB[k]}: ${f(o)} → ${f(v)}`)}}save()}
 function cyc(id){const e=EV(edit),x=e.n.find(q=>q.p===id),o0=x?x.s:"";
 if(!x)e.n.push({p:id,s:"Nomeado"});else if(x.s==="Nomeado")x.s="Reserva";else e.n=e.n.filter(q=>q.p!==id);
-const s=(e.n.find(q=>q.p===id)||{}).s||"",[c,l]=stl(s);{const p=P(id);lg(e,`${p?p.posto+" "+p.nome:"?"}: ${o0||"fora"} → ${s||"fora"}`)}$("#r_"+id).className="pk "+c;$("#b_"+id).textContent=l;$("#cnt").innerHTML="<b>"+cnt(e)+"</b>";save()}
+const s=(e.n.find(q=>q.p===id)||{}).s||"",[c,l]=stl(s);{const p=P(id);lg(e,`${p?p.posto+" "+p.nome:"?"}: ${o0||"fora"} → ${s||"fora"}`)}$("#r_"+id).className="pk "+c;$("#b_"+id).textContent=l;$("#cnt").innerHTML="<b>"+cnt(e)+"</b>";avUpd();save()}
 function montar(){const e=EV(edit);if(!e.n.some(x=>x.s==="Nomeado"))return alert("Selecione pelo menos uma pessoa como Nomeado.");{const nv=!e.montada;e.montada=true;if(nv)lg(e,`Banda montada: ${e.n.filter(x=>x.s==="Nomeado").length} nomeados, ${e.n.filter(x=>x.s==="Reserva").length} em reserva`)}save();vw=e.id;edit=null;draw()}
 function tgl(){const l=$("#lista"),h=l.hidden;l.hidden=!h;$("#eye").setAttribute("aria-pressed",String(h));$("#eye").style.opacity=h?"1":".6"}
 const EYE='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -297,7 +317,7 @@ function naipes(){const st=new Set(S.people.map(p=>nOf(p.inst))),a=INSTR.filter(
 const nLbl=v=>v==="__none"?"Sem instrumento":v;
 function calcEq(n,o){if(n===undefined)n=fl.n;const hh=o&&o.h>0?o.h:HV();if(n&&!naipes().includes(n))n="";
 const pp=S.people.filter(p=>!n||(n==="__none"?!p.inst:nOf(p.inst)===n)),ids=new Set(pp.map(p=>p.id));
-const ev=S.events.filter(e=>(!fl.a||e.data>=fl.a)&&(!fl.b||e.data<=fl.b)),sv=ev.filter(e=>e.viag==null&&e.n.some(x=>x.s==="Nomeado"&&ids.has(x.p))).length;
+const ev=S.events.filter(e=>(!fl.a||e.data>=fl.a)&&(!fl.b||e.data<=fl.b)&&!(o&&o.ex&&e.id===o.ex)),sv=ev.filter(e=>e.viag==null&&e.n.some(x=>x.s==="Nomeado"&&ids.has(x.p))).length;
 const r=pp.map(p=>{let f=0,rs=0,vg=0,pt=0;ev.forEach(e=>{const x=e.n.find(n=>n.p===p.id);if(!x)return;if(x.s==="Nomeado"){f++;vg+=2*(e.viag||0);pt+=peso(e,hh)}else if(x.s==="Reserva")rs++});return{p,f,rs,vg,pt}}).sort((a,b)=>b.pt-a.pt||b.f-a.f);
 const tot=r.reduce((s,x)=>s+x.pt,0),avg=r.length?tot/r.length:0,mx=Math.max(1e-9,...r.map(x=>x.pt)),fair=r.length?100/r.length:0;
 return{ev,sv,r,tot,avg,mx,fair,pp}}
@@ -365,7 +385,7 @@ const ds=evs.map(e=>e.data).filter(Boolean).sort();
 const per=(fl.a||fl.b)?(fl.a&&fl.b?`de ${fd(fl.a)} a ${fd(fl.b)}`:fl.a?`desde ${fd(fl.a)}`:`até ${fd(fl.b)}`):`todas as cerimónias registadas${ds.length?` (de ${fd(ds[0])} a ${fd(ds[ds.length-1])})`:""}`;
 np();
 T(M,y+10,"Banda Sinfónica da Guarda Nacional Republicana",11,1,GREEN);y+=18;
-T(M,y+16,"Resumo de nomeações e esforço"+(fl.n?" — "+nLbl(fl.n):""),17,1,BLK);y+=26;
+T(M,y+16,(pdfT||"Resumo de nomeações e esforço")+(fl.n?" — "+nLbl(fl.n):""),17,1,BLK);y+=26;
 T(M,y+9,`Âmbito: ${fl.n?"naipe de "+nLbl(fl.n):"geral (toda a banda)"} · Período: ${per}`,9,0,GREY);y+=13;
 T(M,y+9,`Gerado em ${gen} · ${evs.length} cerimónia(s) · ${d.pp.length} efetivo(s)`,9,0,GREY);y+=17;
 const crit=`Critério de cálculo: cada nomeação vale 1 ponto, mais 1 ponto por cada ${HV()} ${HV()===1?"hora":"horas"} de viagem, contando ida e volta (a viagem de ida é calculada a partir da Calçada da Ajuda). A reserva não conta. Contam as nomeações que constam nas listas, e não a presença efetiva. Partilha igual: ${d.fair.toFixed(1)}% por pessoa${fl.n?" (as percentagens são calculadas só dentro do naipe)":""}. Marca-se "acima" ou "abaixo" quando os pontos de uma pessoa se afastam mais de ${TH()}% da média (folga mínima de 0,5 pontos).`+(d.sv?` ${d.sv} cerimónia(s) sem viagem preenchida contam só 1 ponto.`:"");
@@ -419,9 +439,10 @@ objs.forEach((o,i)=>{off.push(out.length);out+=`${i+1} 0 obj\n${o}\nendobj\n`});
 const xr=out.length;
 out+=`xref\n0 ${objs.length+1}\n0000000000 65535 f \n`+off.map(n=>String(n).padStart(10,"0")+" 00000 n \n").join("")+`trailer\n<< /Size ${objs.length+1} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`;
 const u=new Uint8Array(out.length);for(let i=0;i<out.length;i++)u[i]=out.charCodeAt(i)&255;return u}
-async function exportPDF(){const x=fl.x&&naipes().includes(fl.x)?fl.x:"",d=calcEq(x);if(!d.ev.length)return alert("Não há cerimónias no período selecionado.");
-let u;const sv=fl.n;fl.n=x;try{u=buildPDF()}catch(e){console.error(e);return alert("Não foi possível gerar o PDF.")}finally{fl.n=sv}
-const tag=x?"_"+nLbl(x).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z0-9]+/g,"_").replace(/^_+|_+$/g,""):"_Geral",nm="Nomeacoes"+tag+"_"+new Date().toISOString().slice(0,10)+".pdf",f=new File([u],nm,{type:"application/pdf"});
+let pdfT="";
+async function exportPDF(o){o=o||{};const x=o.x!==undefined?o.x:(fl.x&&naipes().includes(fl.x)?fl.x:""),sa=fl.a,sb=fl.b,sv=fl.n;if(o.a){fl.a=o.a;fl.b=o.b}
+let u;try{const d=calcEq(x);if(!d.ev.length)return alert("Não há cerimónias no período selecionado.");fl.n=x;pdfT=o.tit||"";u=buildPDF()}catch(e){console.error(e);return alert("Não foi possível gerar o PDF.")}finally{fl.n=sv;fl.a=sa;fl.b=sb;pdfT=""}
+const tag=x?"_"+nLbl(x).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z0-9]+/g,"_").replace(/^_+|_+$/g,""):"_Geral",nm=(o.fn||"Nomeacoes")+tag+"_"+new Date().toISOString().slice(0,10)+".pdf",f=new File([u],nm,{type:"application/pdf"});
 try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:nm});return}}catch(e){if(e&&e.name==="AbortError")return}
 const url=URL.createObjectURL(f),a=document.createElement("a");a.href=url;a.download=nm;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
 
@@ -437,7 +458,7 @@ if(v>0){g+=`<path d="M${x},${H-B}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},$
 g+=`<text x="${x+w/2}" y="${H-6}" text-anchor="middle">${labs[i]}</text><rect x="${i*bw}" y="0" width="${bw}" height="${H}" fill="transparent" onclick="tipE('${id}','${tx}')"/>`});
 return g+`</svg><p class="mut" id="${id}">Toque numa barra para ver o valor.</p>`}
 function vEc(){const ys=[...new Set(S.events.map(e=>(e.data||"").slice(0,4)).filter(Boolean))].sort().reverse(),Y=ys.includes(fl.ey)?fl.ey:(ys[0]||String(new Date().getFullYear())),NP=naipes(),nv=NP.includes(fl.en)?fl.en:"";
-const sel=`<div class="card"><div class="row">${fld("Ano","",`<select onchange="fl.ey=this.value;draw()">${(ys.length?ys:[Y]).map(y=>`<option ${y===Y?"selected":""}>${y}</option>`).join("")}</select>`)}${fld("Naipe","",`<select onchange="fl.en=this.value;draw()"><option value="">Geral (toda a banda)</option>${NP.map(v=>`<option value="${esc(v)}" ${nv===v?"selected":""}>${esc(nLbl(v))}</option>`).join("")}</select>`)}</div>
+fl.yy=Y;const sel=`<div class="card"><div class="row">${fld("Ano","",`<select onchange="fl.ey=this.value;draw()">${(ys.length?ys:[Y]).map(y=>`<option ${y===Y?"selected":""}>${y}</option>`).join("")}</select>`)}${fld("Naipe","",`<select onchange="fl.en=this.value;draw()"><option value="">Geral (toda a banda)</option>${NP.map(v=>`<option value="${esc(v)}" ${nv===v?"selected":""}>${esc(nLbl(v))}</option>`).join("")}</select>`)}</div>
 <p class="mut">Contam as nomeações que constam nas listas. Os pontos seguem as regras do separador Equilíbrio (${HV()} h por ponto).</p></div>`;
 if(!S.events.length)return sel+`<div class="card"><p class="mut">Ainda sem cerimónias registadas.</p></div>`;
 const pp=S.people.filter(p=>!nv||(nv==="__none"?!p.inst:nOf(p.inst)===nv)).sort(cmpI),ids=new Set(pp.map(p=>p.id));
@@ -454,13 +475,14 @@ else h+=`<div class="card"><p class="mut">Escolha um naipe para ver o mapa de no
 const sa=fl.a,sb=fl.b;fl.a=Y+"-01-01";fl.b=Y+"-12-31";let bal="";
 try{if(nv){const d=calcEq(nv);bal=`<p class="mut" style="margin-top:0">${d.ev.length} cerimónias no ano · ${d.r.reduce((t,x)=>t+x.f,0)} nomeações · média de ${f1(Math.round(d.avg*10)/10)} pontos por pessoa.</p>`+(d.r.map(x=>{const t=stT(x,d.avg);return `<div class="pl2"><div class="pr"><div class="ln"><div class="tt">${esc(x.p.posto)} ${esc(x.p.nome)}</div></div>${t?`<span class="tag ${t==="acima"?"hi":t==="abaixo"?"lo":"ok"}">${t}</span>`:""}</div><div class="mut">${x.f} ${x.f===1?"nomeação":"nomeações"} · ${f1(Math.round(x.pt*10)/10)} pts · ${d.tot?(x.pt/d.tot*100).toFixed(1):"0.0"}% do esforço · reserva ${x.rs}</div></div>`}).join("")||`<p class="mut">Sem dados.</p>`)}
 else bal=`<p class="mut" style="margin-top:0">Resumo por naipe. Para ver cada pessoa, escolha um naipe.</p>`+NP.map(v=>{const d=calcEq(v),ac=d.r.filter(x=>stT(x,d.avg)==="acima").length,ab=d.r.filter(x=>stT(x,d.avg)==="abaixo").length,tg=!d.tot?`<span class="tag">sem nomeações</span>`:(ac||ab)?`${ac?`<span class="tag hi">${ac} acima</span> `:""}${ab?`<span class="tag lo">${ab} abaixo</span>`:""}`:`<span class="tag ok">equilibrado</span>`;return `<div class="pl2"><div class="tt">${esc(nLbl(v))}</div><div class="mut">${d.pp.length} efetivo(s) · ${d.r.reduce((t,x)=>t+x.f,0)} nomeações · média ${f1(Math.round(d.avg*10)/10)} pts</div><div style="margin-top:4px">${tg}</div></div>`}).join("")}finally{fl.a=sa;fl.b=sb}
-return h+`<div class="card"><h2>Balanço de ${Y}</h2>${bal}</div>`}
+return h+`<div class="card"><h2>Balanço de ${Y}</h2>${bal}<div class="row" style="margin:10px 0 0"><button class="pri" onclick="exBal()">Exportar PDF do balanço</button></div></div>`}
+function exBal(){exportPDF({x:fl.en&&naipes().includes(fl.en)?fl.en:"",a:fl.yy+"-01-01",b:fl.yy+"-12-31",tit:"Balanço de "+fl.yy,fn:"Balanco_"+fl.yy})}
 /* Backup */
 function vBk(){return `<div class="card"><h2>Cópia de segurança</h2><p class="mut">Os dados ficam só neste dispositivo e navegador. Copie o texto abaixo e guarde-o num local seguro. Para restaurar, cole-o e carregue em Restaurar.</p>
 <textarea id="bk">${esc(JSON.stringify(S))}</textarea>
 <div class="row"><button class="pri" onclick="rest()">Restaurar</button><button class="del" onclick="wipe()">Apagar tudo</button></div></div>`}
 function rest(){try{const d=JSON.parse($("#bk").value);if(!Array.isArray(d.people)||!Array.isArray(d.events))throw 0;S=d;mig();save();tab="eq";draw()}catch(e){alert("Texto inválido.")}}
-function wipe(){if(confirm("Apagar todos os dados?")){S={people:[],events:[]};fClr();save();draw()}}
-draw();
+function wipe(){if(confirm("Apagar todos os dados?")){S={people:[],events:[],bin:[]};fClr();save();draw()}}
+purgeBin();draw();
 try{if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js")}catch(e){}
 </script></body></html>
