@@ -99,7 +99,7 @@ function nav(){document.body.classList.toggle("hm",tab==="home");$("#nav").inner
 document.querySelectorAll(".mi").forEach(b=>b.classList.toggle("on",b.dataset.t===tab))}
 function openM(){$("#ov").hidden=false;$("#dr").classList.add("open");$("#dr").setAttribute("aria-hidden","false")}
 function closeM(){$("#ov").hidden=true;$("#dr").classList.remove("open");$("#dr").setAttribute("aria-hidden","true")}
-function go(t){tab=t;edit=null;edId=null;vw=null;closeM();draw();window.scrollTo(0,0)}
+function go(t){tab=t;edit=null;edId=null;vw=null;if(t==="eq")fl.n="";closeM();draw();window.scrollTo(0,0)}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeM()});
 function vHome(){return `<div class="home"></div>`}
 function draw(){nav();$("#v").innerHTML={home:vHome,eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]()}
@@ -216,27 +216,39 @@ ${R.length?`<div class="ih">Reserva</div>${R.map(p=>`<div class="pl2">${ln(p)} <
 const HV=()=>{const h=S.cfg&&parseFloat(S.cfg.h);return h>0?h:4};
 const peso=e=>1+2*(e.viag||0)/60/HV();
 function setH(v){const h=parseFloat(String(v).replace(",","."));if(!(h>0)){alert("Indique um número de horas maior que zero.");return draw()}S.cfg=S.cfg||{};S.cfg.h=h;save();draw()}
-function naipes(){const st=new Set(S.people.map(p=>p.inst||"")),a=INSTR.filter(i=>st.has(i));st.forEach(i=>{if(i&&!INSTR.includes(i))a.push(i)});if(st.has(""))a.push("__none");return a}
+const nOf=i=>i==="Requinta"?"Clarinete":(i||"");
+function naipes(){const st=new Set(S.people.map(p=>nOf(p.inst))),a=INSTR.filter(i=>st.has(i));st.forEach(i=>{if(i&&!INSTR.includes(i))a.push(i)});if(st.has(""))a.push("__none");return a}
 const nLbl=v=>v==="__none"?"Sem instrumento":v;
-function calcEq(){if(fl.n&&!naipes().includes(fl.n))fl.n="";
-const pp=S.people.filter(p=>!fl.n||(fl.n==="__none"?!p.inst:p.inst===fl.n)),ids=new Set(pp.map(p=>p.id));
+function calcEq(n){if(n===undefined)n=fl.n;if(n&&!naipes().includes(n))n="";
+const pp=S.people.filter(p=>!n||(n==="__none"?!p.inst:nOf(p.inst)===n)),ids=new Set(pp.map(p=>p.id));
 const ev=S.events.filter(e=>(!fl.a||e.data>=fl.a)&&(!fl.b||e.data<=fl.b)),sv=ev.filter(e=>e.viag==null&&e.n.some(x=>x.s==="Nomeado"&&ids.has(x.p))).length;
 const r=pp.map(p=>{let f=0,rs=0,vg=0,pt=0;ev.forEach(e=>{const x=e.n.find(n=>n.p===p.id);if(!x)return;if(x.s==="Nomeado"){f++;vg+=2*(e.viag||0);pt+=peso(e)}else if(x.s==="Reserva")rs++});return{p,f,rs,vg,pt}}).sort((a,b)=>b.pt-a.pt||b.f-a.f);
 const tot=r.reduce((s,x)=>s+x.pt,0),avg=r.length?tot/r.length:0,mx=Math.max(1e-9,...r.map(x=>x.pt)),fair=r.length?100/r.length:0;
 return{ev,sv,r,tot,avg,mx,fair,pp}}
 const stT=(x,avg)=>{if(!avg)return"";const t=Math.max(.5,avg*.25);return x.pt>avg+t?"acima":x.pt<avg-t?"abaixo":"na média"};
-function vEq(){const{ev,sv,r,tot,avg,mx,fair}=calcEq();
+function openN(i){fl.n=naipes()[i]||"";draw();window.scrollTo(0,0)}
+function vEq(){if(fl.n&&!naipes().includes(fl.n))fl.n="";
+const d=calcEq(),{ev,sv,r,tot,avg,mx,fair}=d,inN=!!fl.n;
 const fl2=x=>{const t=stT(x,avg);return t?`<span class="tag ${t==="acima"?"hi":t==="abaixo"?"lo":"ok"}">${t}</span>`:""};
-return `<div class="card"><h2>Período</h2><div class="row"><input type="date" value="${fl.a}" onchange="fl.a=this.value;draw()"><input type="date" value="${fl.b}" onchange="fl.b=this.value;draw()"><button onclick="fl.a='';fl.b='';draw()">Limpar</button></div>
-<div class="row">${fld("Naipe","",`<select onchange="fl.n=this.value;draw()"><option value="">Geral (toda a banda)</option>${naipes().map(v=>`<option value="${esc(v)}" ${fl.n===v?"selected":""}>${esc(nLbl(v))}</option>`).join("")}</select>`)}</div>
-<div class="row"><button class="pri" onclick="exportPDF()">Exportar PDF${fl.n?" · "+esc(nLbl(fl.n)):" · geral"}</button></div>
-<p class="mut">${ev.length} cerimónias no período. Contam as nomeações que constam nas listas, não a presença efetiva. O PDF contém nomes e números de ordem: trate-o como informação sensível.</p></div>
-<div class="card"><h2>Como se calcula o esforço</h2>
-<p class="mut">Cada nomeação vale 1 ponto, mais um agravante pela viagem, contando ida e volta. A cada <input type="number" step="0.5" min="0.5" inputmode="decimal" value="${HV()}" style="width:70px;padding:3px 6px" onchange="setH(this.value)"> horas de viagem (ida e volta) soma-se mais 1 ponto. Exemplo: com 4 horas, uma cerimónia com 20 min de ida vale ${(1+2*20/60/HV()).toFixed(2)} pontos e uma com 5 h de ida vale ${(1+2*300/60/HV()).toFixed(2)}. A reserva não conta.</p>
-${sv?`<p class="mut"><b>${sv}</b> cerimónia(s) sem viagem preenchida contam só 1 ponto.</p>`:""}</div>
-<div class="card"><div class="tw"><table><tr><th>Pessoa</th><th>Nomeações</th><th>Esforço</th><th></th><th>Viagem</th><th>Reserva</th><th>Estado</th></tr>
-${r.map(x=>`<tr><td>${esc(x.p.posto)} ${esc(x.p.nome)} <span class="mut">${esc(x.p.inst)}</span></td><td>${x.f}</td><td>${tot?(x.pt/tot*100).toFixed(1):"0.0"}%</td><td><div class="bar"><i style="width:${x.pt/mx*100}%"></i></div></td><td>${x.vg?fmtV(x.vg):"–"}</td><td>${x.rs}</td><td>${fl2(x)}</td></tr>`).join("")||`<tr><td class="mut">Sem dados.</td></tr>`}</table></div>
-<p class="mut">Partilha igual: ${fair.toFixed(1)}% por pessoa. O alerta dispara quando os pontos de uma pessoa se afastam mais de 25% da média.</p></div>`}
+const per=`<div class="card"><h2>Período</h2><div class="row"><input type="date" value="${fl.a}" onchange="fl.a=this.value;draw()"><input type="date" value="${fl.b}" onchange="fl.b=this.value;draw()"><button onclick="fl.a='';fl.b='';draw()">Limpar</button></div>
+<div class="row"><button class="pri" onclick="exportPDF()">Exportar PDF${inN?" · "+esc(nLbl(fl.n)):" · geral"}</button></div>
+<p class="mut">${ev.length} cerimónias no período. Contam as nomeações que constam nas listas, não a presença efetiva. O PDF contém nomes e números de ordem: trate-o como informação sensível.</p></div>`;
+const expl=`<div class="card"><h2>Como se calcula o esforço</h2>
+<p class="mut">Cada nomeação vale 1 ponto, mais um agravante pela viagem, contando ida e volta. A cada <input type="number" step="0.5" min="0.5" inputmode="decimal" value="${HV()}" style="width:70px;padding:3px 6px" onchange="setH(this.value)"> horas de viagem (ida e volta) soma-se mais 1 ponto. Exemplo: com ${HV()} horas, uma cerimónia com 20 min de ida vale ${(1+2*20/60/HV()).toFixed(2)} pontos e uma com 5 h de ida vale ${(1+2*300/60/HV()).toFixed(2)}. A reserva não conta.</p>
+${sv?`<p class="mut"><b>${sv}</b> cerimónia(s) sem viagem preenchida contam só 1 ponto.</p>`:""}</div>`;
+if(!inN){
+const NP=naipes();
+const rows=NP.map((v,i)=>{const q=calcEq(v),ac=q.r.filter(x=>stT(x,q.avg)==="acima").length,ab=q.r.filter(x=>stT(x,q.avg)==="abaixo").length,nm=q.r.reduce((t,x)=>t+x.f,0);
+const tg=!q.tot?`<span class="tag">sem nomeações</span>`:(ac||ab)?`${ac?`<span class="tag hi">${ac} acima</span> `:""}${ab?`<span class="tag lo">${ab} abaixo</span>`:""}`:`<span class="tag ok">equilibrado</span>`;
+return `<div class="pl2 pr" onclick="openN(${i})" style="cursor:pointer"><div class="ln"><div class="tt">${esc(nLbl(v))}</div><div class="mut">${q.pp.length} efetivo(s) · ${nm} nomeações · média ${q.avg.toFixed(1)} pts</div><div style="margin-top:5px">${tg}</div></div><span class="mut" style="font-size:24px">›</span></div>`}).join("");
+return per+`<div class="card"><h2>Naipes</h2><p class="mut">Toque num naipe para ver o esforço de cada pessoa.</p>${rows||`<p class="mut">Ainda sem efetivos. Adicione-os no separador Efetivos.</p>`}</div>`+expl}
+return `<div class="card"><div class="row" style="flex-wrap:nowrap;align-items:center;margin:0"><button onclick="fl.n='';draw();window.scrollTo(0,0)" style="flex:0 0 auto;min-width:0">‹ Naipes</button><h2 style="flex:1;margin:0">${esc(nLbl(fl.n))}</h2></div>
+<p class="mut" style="margin-bottom:0">${d.pp.length} efetivo(s). As percentagens de esforço são calculadas só dentro do naipe.</p></div>`+per+
+`<div class="card"><h2>Pessoas</h2>
+${r.map(x=>`<div class="pl2"><div class="pr"><div class="ln"><div class="tt">${esc(x.p.posto)} ${esc(x.p.nome)}</div></div>${fl2(x)}</div>
+<div class="bar" style="margin:7px 0 5px"><i style="width:${x.pt/mx*100}%"></i></div>
+<div class="mut">${x.f} ${x.f===1?"nomeação":"nomeações"} · ${tot?(x.pt/tot*100).toFixed(1):"0.0"}% do esforço · viagem ${x.vg?fmtV(x.vg):"–"} · reserva ${x.rs}</div></div>`).join("")||`<p class="mut">Sem dados.</p>`}
+<p class="mut">Partilha igual: ${fair.toFixed(1)}% por pessoa. O alerta dispara quando os pontos de uma pessoa se afastam mais de 25% da média.</p></div>`+expl}
 /* ===== Exportar PDF ===== */
 const HWR=[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,761,556,556,222,556,333,1000,556,556,333,1000,667,333,1000,556,611,556,556,222,222,333,333,350,556,1000,333,1000,500,333,944,556,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500],HWB=[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,761,556,556,278,556,500,1000,556,556,333,1000,667,333,1000,556,611,556,556,278,278,500,500,350,556,1000,333,1000,556,333,944,556,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556];
 const WA={8211:150,8212:151,8226:149,8220:147,8221:148,8216:145,8217:146,8230:133,8364:128};
