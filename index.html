@@ -18,10 +18,12 @@ h1{font-size:20px;margin:4px 0 12px}h2{font-size:16px;margin:0 0 8px}
 nav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 nav button{flex:1;min-width:110px}
 button,select,input,textarea{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 10px}
+option,optgroup{background:var(--card);color:var(--fg)}
 button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}button.on,button.pri{background:var(--ac);color:var(--onac,#fff);border-color:var(--ac)}
 button.del{color:var(--hi)}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.row[hidden]{display:none}
 .row>*{flex:1;min-width:120px}
 .tw{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:14px}
@@ -105,7 +107,7 @@ main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 <footer id="tb"></footer>
 <script>
 const ES=["Nomeado","Reserva"];
-const POSTOS=["GPROV","GUARDA","GPRIN","CABO","CCH","CMOR","FUR","2SAR","1SAR","SAJ","SCH","SMOR"];
+const POSTOS=["GPROV","GUARDA","GPRIN","CABO","CCH","CMOR","FUR","2SAR","1SAR","SAJ","SCH","SMOR","ALF","TEN","CAP","MAJ","TCOR","COR"];
 const LEG={};POSTOS.forEach(x=>LEG[x]=x);
 Object.assign(LEG,{"CCHEFE":"CCH","GUARDAPROVISÓRIO":"GPROV","GUARDAPRINCIPAL":"GPRIN","CABOCHEFE":"CCH","CABOMOR":"CMOR","FURRIEL":"FUR","2ºSARGENTO":"2SAR","1ºSARGENTO":"1SAR","SARGENTOAJUDANTE":"SAJ","SARGENTOCHEFE":"SCH","SARGENTOMOR":"SMOR"});
 const INSTR=["Oboé","Flauta","Requinta","Clarinete","Fagote","Sax. Alto","Sax. Tenor","Trompa","Trompete","Trombone","Bombardino","Tuba","Percussão","Violino","Viola","Violoncelo","Contrabaixo"];
@@ -165,14 +167,16 @@ function nk(t){return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,
 function fixP(p){if(!p.g)p.g="B";if(p.adido===undefined){const o=String(p.ordem||"");if(o&&o.length!==7){p.adido=o;p.ordem=""}else p.adido=""}
 p.ordem=String(p.ordem||"");const m=INSTR.find(i=>nk(i)===nk(p.inst));if(m)p.inst=m}
 function opts(list,sel,ph){return (sel&&!list.includes(sel)?`<option selected>${esc(sel)}</option>`:"")+(ph?`<option value="" ${sel?"":"selected"}>${ph}</option>`:"")+list.map(x=>`<option ${x===sel?"selected":""}>${esc(x)}</option>`).join("")}
+const GRP_P=[["Oficiais",["COR","TCOR","MAJ","CAP","TEN","ALF"]],["Sargentos",["SMOR","SCH","SAJ","1SAR","2SAR","FUR"]],["Praças",["CMOR","CCH","CABO","GPRIN","GUARDA","GPROV"]]];
+function optP(sel){const k=GRP_P.flatMap(g=>g[1]);return (sel&&!k.includes(sel)?`<option selected>${esc(sel)}</option>`:"")+GRP_P.map(([n,l])=>`<optgroup label="${n}">${l.map(x=>`<option ${x===sel?"selected":""}>${x}</option>`).join("")}</optgroup>`).join("")}
 const fld=(l,c,h)=>`<label class="f ${c}"><span>${l}</span>${h}</label>`;
 const DG="this.value=this.value.replace(/\\D/g,'')";
 let edId=null;
-function frm(x,p){return `<div class="g3">${fld("Posto","",`<select id="${x}P">${opts([...POSTOS].reverse(),p.posto)}</select>`)}${fld("Nº Adido","",`<input id="${x}A" inputmode="numeric" value="${esc(p.adido)}" oninput="${DG}">`)}${fld("Nº Ordem","",`<input id="${x}O" inputmode="numeric" maxlength="7" value="${esc(p.ordem)}" oninput="${DG}">`)}</div>
+function frm(x,p){return `<div class="g3">${fld("Posto","",`<select id="${x}P">${optP(p.posto)}</select>`)}${fld("Nº Adido","",`<input id="${x}A" inputmode="numeric" value="${esc(p.adido)}" oninput="${DG}">`)}${fld("Nº Ordem","",`<input id="${x}O" inputmode="numeric" maxlength="7" value="${esc(p.ordem)}" oninput="${DG}">`)}</div>
 <div class="row">${fld("Nome","",`<input id="${x}N" value="${esc(p.nome)}">`)}</div>
-<div class="row">${fld("Funções","",`<select id="${x}C"><option value="" ${FUN.includes(p.cat)?"":"selected"}>Instrumentista</option>${FUN.map(c=>`<option ${c===p.cat?"selected":""}>${c}</option>`).join("")}</select>`)}</div>
-<div class="row">${fld("Instrumento","",`<select id="${x}I">${opts(INSTR,p.inst,"Selecionar")}</select>`)}</div>
-<div class="row">${fld("Grupo","",`<select id="${x}G">${[["B","Banda"],["BO","Banda e Orquestra"],["O","Só Orquestra"]].map(([k,l])=>`<option value="${k}" ${(p.g||"B")===k?"selected":""}>${l}</option>`).join("")}</select>`)}</div>`}
+<div class="row">${fld("Funções","",`<select id="${x}C" onchange="['IR','GR'].forEach(k=>document.getElementById('${x}'+k).hidden=CATS.includes(this.value))"><option value="" ${FUN.includes(p.cat)?"":"selected"}>Instrumentista</option>${FUN.map(c=>`<option ${c===p.cat?"selected":""}>${c}</option>`).join("")}</select>`)}</div>
+<div class="row" id="${x}IR" ${CATS.includes(p.cat)?"hidden":""}>${fld("Instrumento","",`<select id="${x}I">${opts(INSTR,p.inst,"Selecionar")}</select>`)}</div>
+<div class="row" id="${x}GR" ${CATS.includes(p.cat)?"hidden":""}>${fld("Grupo","",`<select id="${x}G">${[["B","Banda"],["BO","Banda e Orquestra"],["O","Só Orquestra"]].map(([k,l])=>`<option value="${k}" ${(p.g||"B")===k?"selected":""}>${l}</option>`).join("")}</select>`)}</div>`}
 const rk=p=>{const i=POSTOS.indexOf(p.posto);return i<0?-1:i};
 const ad=p=>p.adido?parseInt(p.adido,10):Infinity;
 function cmpH(a,b){const d=rk(b)-rk(a);if(d)return d;const x=ad(a),y=ad(b);if(x!==y)return x<y?-1:1;return String(a.nome).localeCompare(String(b.nome),"pt")}
@@ -191,12 +195,12 @@ function saveE(){const p=P(edId);if(!p)return;const o=$("#eO").value.trim(),n=$(
 if(!/^\d{7}$/.test(o))return alert("O Nº Ordem tem de ter exatamente 7 algarismos.");
 if(!n)return alert("Escreva o nome.");
 if(S.people.some(q=>q.id!==p.id&&q.ordem===o))return alert("Já existe outro efetivo com este Nº Ordem.");
-p.posto=$("#eP").value;p.adido=$("#eA").value.trim();p.ordem=o;p.nome=n;p.inst=$("#eI").value;p.cat=$("#eC").value;p.g=$("#eG").value;edId=null;save();draw()}
-function addP(){const n=$("#nN").value.trim(),o=$("#nO").value.trim(),a=$("#nA").value.trim(),po=$("#nP").value,i=$("#nI").value,ct=$("#nC").value;
+p.posto=$("#eP").value;p.adido=$("#eA").value.trim();p.ordem=o;p.nome=n;p.cat=$("#eC").value;p.inst=CATS.includes(p.cat)?"":$("#eI").value;p.g=CATS.includes(p.cat)?"BO":$("#eG").value;edId=null;save();draw()}
+function addP(){const n=$("#nN").value.trim(),o=$("#nO").value.trim(),a=$("#nA").value.trim(),po=$("#nP").value,ct=$("#nC").value,i=CATS.includes(ct)?"":$("#nI").value;
 if(!/^\d{7}$/.test(o))return alert("O Nº Ordem tem de ter exatamente 7 algarismos.");
 if(!n)return alert("Escreva o nome.");
 if(S.people.some(q=>q.ordem===o))return alert("Já existe um efetivo com este Nº Ordem.");
-S.people.push({id:uid(),posto:po,adido:a,ordem:o,nome:n,inst:i,cat:ct,g:$("#nG").value});lastAdd={posto:po,inst:i,g:$("#nG").value};(fl.cc=fl.cc||{})[grp({inst:i,cat:ct})]=true;save();draw()}
+S.people.push({id:uid(),posto:po,adido:a,ordem:o,nome:n,inst:i,cat:ct,g:CATS.includes(ct)?"BO":$("#nG").value});lastAdd={posto:po,inst:i,g:$("#nG").value};(fl.cc=fl.cc||{})[grp({inst:i,cat:ct})]=true;save();draw()}
 function edP(id,k,v){const p=P(id);if(!p)return;
 if(k==="ordem"){v=v.replace(/\D/g,"");
 if(!/^\d{7}$/.test(v)){alert("O Nº Ordem tem de ter exatamente 7 algarismos.");return draw()}
