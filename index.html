@@ -89,6 +89,11 @@ main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 .nd{border-top:1px solid var(--bd);padding:6px 0}.nd:first-of-type{border-top:0}.nd summary{cursor:pointer;min-height:40px;display:flex;align-items:center;gap:8px;list-style:none}.nd summary::-webkit-details-marker{display:none}.nd summary:before{content:"▾";color:var(--mut)}.nd:not([open]) summary:before{content:"▸"}
 #ts{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;background:#eef4f0;color:#04271d;border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:0 6px 18px rgba(0,0,0,.45)}#ts[hidden]{display:none}#ts button{background:#04271d;color:#eef4f0;border:0;min-height:40px;padding:0 16px;font-weight:700}
 .wr2{background:#3a2f0e;border:1px solid var(--lo);border-radius:12px;padding:10px 14px;color:#f3d98f;font-size:14px;margin:6px 0}
+#nsv{position:fixed;inset:0;z-index:50}#nsv[hidden]{display:none}#nsv .bg{position:absolute;inset:0;background:rgba(0,0,0,.55)}
+#nsv .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--bd);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px}
+#nsv .op{min-height:54px;font-size:17px;font-weight:600;border-radius:14px;text-align:left;padding:0 16px}#nsv .cn{min-height:48px;border:0;background:transparent;color:var(--mut);font-size:16px}
+.chk{display:flex;align-items:center;gap:10px;min-height:44px}.chk input{width:22px;height:22px;padding:0}
+.dcs{display:flex;flex-wrap:wrap;gap:6px}.dc{min-width:46px;min-height:50px;padding:4px 6px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:16px;font-weight:700;line-height:1.15;background:transparent;color:var(--mut)}.dc small{font-size:10px;font-weight:400;text-transform:uppercase}.dc.on{background:var(--ac);color:#04271d;border-color:var(--ac)}
 </style></head><body><main>
 
 <nav id="nav"></nav>
@@ -100,7 +105,7 @@ const ES=["Nomeado","Reserva"];
 const POSTOS=["GPROV","GUARDA","GPRIN","CABO","CCH","CMOR","FUR","2SAR","1SAR","SAJ","SCH","SMOR"];
 const LEG={};POSTOS.forEach(x=>LEG[x]=x);
 Object.assign(LEG,{"CCHEFE":"CCH","GUARDAPROVISÓRIO":"GPROV","GUARDAPRINCIPAL":"GPRIN","CABOCHEFE":"CCH","CABOMOR":"CMOR","FURRIEL":"FUR","2ºSARGENTO":"2SAR","1ºSARGENTO":"1SAR","SARGENTOAJUDANTE":"SAJ","SARGENTOCHEFE":"SCH","SARGENTOMOR":"SMOR"});
-const INSTR=["Oboé","Flauta","Requinta","Clarinete","Fagote","Sax. Alto","Sax. Tenor","Trompa","Trompete","Trombone","Bombardino","Tuba","Percussão"];
+const INSTR=["Oboé","Flauta","Requinta","Clarinete","Fagote","Sax. Alto","Sax. Tenor","Trompa","Trompete","Trombone","Bombardino","Tuba","Percussão","Violino","Viola","Violoncelo","Contrabaixo"];
 let mn=null,ed=null;
 let lastAdd={posto:"GUARDA",inst:""};
 let S={people:[],events:[]},tab="ev",edit=null,fl={a:"",b:"",n:"",x:"",sh:0,sp:0,so:false,pp:"",ey:"",en:""};
@@ -111,18 +116,19 @@ const $=s=>document.querySelector(s);
 const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const uid=()=>Math.random().toString(36).slice(2,9);
 const P=id=>S.people.find(p=>p.id===id);
-const TT={mais:"Mais",ec:"Evolução",eq:"Equilíbrio",ev:"Cerimónias",ef:"Efetivos",bk:"Cópia de segurança"};
+const TT={mais:"Mais",ec:"Evolução",eq:"Equilíbrio",ev:"Serviços",ef:"Efetivos",bk:"Cópia de segurança"};
 const IC={ev:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',eq:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',ec:'<path d="M3 17l6-6 4 4 8-8"/>',mais:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>'};
-function nav(){const ie=tab==="ev",det=ie&&(edit||vw),all=ie&&cl&&!det,back=det?[cl?"‹ Todas":"‹ Cerimónias","edit=null;vw=null;draw()"]:all?["‹ Cerimónias","cl=false;draw()"]:(tab==="ef"||tab==="bk")?["‹ Mais","go('mais')"]:null;
-$("#nav").innerHTML=`<div class="bnm">Banda Sinfónica da Guarda Nacional Republicana</div>${back?`<button class="bkb" onclick="${back[1]}">${back[0]}</button>`:""}${det?"":`<div class="hr2"><h1 class="sec">${all?"Todas":(TT[tab]||"")}</h1>${all?`<button class="pri" onclick="newEv()">+ Nova</button>`:""}</div>`}`;
-$("#tb").innerHTML=[["ev","Cerimónias"],["eq","Equilíbrio"],["ec","Evolução"],["mais","Mais"]].map(([k,n])=>`<button class="${tab===k||(k==="mais"&&(tab==="ef"||tab==="bk"))?"on":""}" onclick="go('${k}')"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>${n}</button>`).join("")}
+function nav(){const ie=tab==="ev",det=ie&&(edit||vw),all=ie&&cl&&!det,back=det?[cl?"‹ Todas":"‹ Serviços","edit=null;vw=null;draw()"]:all?["‹ Serviços","cl=false;draw()"]:(tab==="ef"||tab==="bk")?["‹ Mais","go('mais')"]:null;
+$("#nav").innerHTML=`<div class="bnm">Banda Sinfónica da Guarda Nacional Republicana</div>${back?`<button class="bkb" onclick="${back[1]}">${back[0]}</button>`:""}${det?"":`<div class="hr2"><h1 class="sec">${all?"Todas":(TT[tab]||"")}</h1>${all?`<button class="pri" onclick="novoServ()">+ Novo</button>`:""}</div>`}`;
+$("#tb").innerHTML=[["ev","Serviços"],["eq","Equilíbrio"],["ec","Evolução"],["mais","Mais"]].map(([k,n])=>`<button class="${tab===k||(k==="mais"&&(tab==="ef"||tab==="bk"))?"on":""}" onclick="go('${k}')"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>${n}</button>`).join("")}
 function go(t){{const z=$("#ts");if(z)z.hidden=true}tab=t;cl=false;edit=null;edId=null;vw=null;if(t==="eq")fl.n="";draw();window.scrollTo(0,0)}
-function draw(){nav();$("#v").innerHTML={mais:vMais,ec:vEc,eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]();loadImgs()}
+function draw(){nav();setTimeout(()=>{const e=tab==="ev"&&edit?EV(edit):null;if(e&&e.ens)ensSum(e)},0);$("#v").innerHTML={mais:vMais,ec:vEc,eq:vEq,ev:vEv,ef:vEf,bk:vBk}[tab]();loadImgs()}
 function vMais(){const n=S.people.length;
 return `<div class="cm" onclick="go('ef')" style="cursor:pointer;display:flex;align-items:center;gap:8px"><div class="ln"><div class="tt">Efetivos</div><div class="mut">${n} ${n===1?"pessoa":"pessoas"} · cadastro</div></div><span class="mut" style="font-size:24px">›</span></div>
 <div class="sh">Cálculo do esforço</div>
 <div class="card"><div class="g3" style="grid-template-columns:1fr 1fr">${fld("Horas por ponto","",`<input type="number" step="0.5" min="0.5" inputmode="decimal" value="${HV()}" onchange="setH(this.value)">`)}${fld("Limite dos alertas (%)","",`<input type="number" step="1" min="1" max="100" inputmode="numeric" value="${TH()}" onchange="setP(this.value)">`)}</div>
-<p class="mut">A cada ${HV()} h de viagem (ida e volta) soma-se mais 1 ponto.</p>
+<div class="row" style="margin:0 0 8px">${fld("Horas de ensaio por ponto","",`<input type="number" step="0.5" min="0.5" inputmode="decimal" value="${HE()}" onchange="setHe(this.value)">`)}</div>
+<p class="mut">A cada ${HV()} h de viagem (ida e volta) soma-se mais 1 ponto, e a cada ${hTx(HE())} h de ensaio também.</p>
 <div class="row" style="margin:0"><button onclick="fl.so=true;go('eq')">Simular outros valores</button></div></div>
 <div class="sh">Dados</div>
 <div class="cm" onclick="go('bk')" style="cursor:pointer;display:flex;align-items:center;gap:8px"><div class="ln"><div class="tt">Cópia de segurança</div><div class="mut">Guardar ou restaurar os dados</div></div><span class="mut" style="font-size:24px">›</span></div>
@@ -141,7 +147,7 @@ function vBin(){const B=[...(S.bin||[])].reverse();if(!B.length)return"";
 return `<div class="cm lgd"><details><summary><b>Reciclagem</b> (${B.length})</summary><p class="mut">Apagado há menos de 30 dias. Passado esse tempo é removido de vez.</p>${B.map(b=>`<div class="hl"><div class="tt">${b.k==="e"?"Cerimónia · "+fd(b.d.data)+" · "+esc(b.d.nome||b.d.local||"Sem nome"):"Efetivo · "+esc(b.d.posto)+" "+esc(b.d.nome)}</div><div class="mut">${fdt(b.t)}</div><div class="row" style="margin:6px 0 0"><button class="pri" onclick="binRest('${b.id}')">Restaurar</button><button class="del" onclick="binDel('${b.id}')">Apagar de vez</button></div></div>`).join("")}</details></div>`}
 /* Efetivos */
 function nk(t){return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[\s.]/g,"")}
-function fixP(p){if(p.adido===undefined){const o=String(p.ordem||"");if(o&&o.length!==7){p.adido=o;p.ordem=""}else p.adido=""}
+function fixP(p){if(!p.g)p.g="B";if(p.adido===undefined){const o=String(p.ordem||"");if(o&&o.length!==7){p.adido=o;p.ordem=""}else p.adido=""}
 p.ordem=String(p.ordem||"");const m=INSTR.find(i=>nk(i)===nk(p.inst));if(m)p.inst=m}
 function opts(list,sel,ph){return (sel&&!list.includes(sel)?`<option selected>${esc(sel)}</option>`:"")+(ph?`<option value="" ${sel?"":"selected"}>${ph}</option>`:"")+list.map(x=>`<option ${x===sel?"selected":""}>${esc(x)}</option>`).join("")}
 const fld=(l,c,h)=>`<label class="f ${c}"><span>${l}</span>${h}</label>`;
@@ -149,18 +155,19 @@ const DG="this.value=this.value.replace(/\\D/g,'')";
 let edId=null;
 function frm(x,p){return `<div class="g3">${fld("Posto","",`<select id="${x}P">${opts([...POSTOS].reverse(),p.posto)}</select>`)}${fld("Nº Adido","",`<input id="${x}A" inputmode="numeric" value="${esc(p.adido)}" oninput="${DG}">`)}${fld("Nº Ordem","",`<input id="${x}O" inputmode="numeric" maxlength="7" value="${esc(p.ordem)}" oninput="${DG}">`)}</div>
 <div class="row">${fld("Nome","",`<input id="${x}N" value="${esc(p.nome)}">`)}</div>
-<div class="row">${fld("Instrumento","",`<select id="${x}I">${opts(INSTR,p.inst,"Selecionar")}</select>`)}</div>`}
+<div class="row">${fld("Instrumento","",`<select id="${x}I">${opts(INSTR,p.inst,"Selecionar")}</select>`)}</div>
+<div class="row">${fld("Grupo","",`<select id="${x}G">${[["B","Banda"],["BO","Banda e Orquestra"],["O","Só Orquestra"]].map(([k,l])=>`<option value="${k}" ${(p.g||"B")===k?"selected":""}>${l}</option>`).join("")}</select>`)}</div>`}
 const rk=p=>{const i=POSTOS.indexOf(p.posto);return i<0?-1:i};
 const ad=p=>p.adido?parseInt(p.adido,10):Infinity;
 function cmpH(a,b){const d=rk(b)-rk(a);if(d)return d;const x=ad(a),y=ad(b);if(x!==y)return x<y?-1:1;return String(a.nome).localeCompare(String(b.nome),"pt")}
 function vEf(){const L=[...S.people].sort(cmpH),v=x=>esc(x||"–");
-return (fl.nf?`<div class="card"><h2>Adicionar efetivo</h2>${frm("n",{posto:lastAdd.posto,inst:lastAdd.inst})}
+return (fl.nf?`<div class="card"><h2>Adicionar efetivo</h2>${frm("n",{posto:lastAdd.posto,inst:lastAdd.inst,g:lastAdd.g})}
 <div class="row"><button class="pri" onclick="addP()">Adicionar</button><button onclick="fl.nf=false;draw()">Fechar</button></div></div>`:`<button class="pri nb" style="margin:0 0 12px" onclick="fl.nf=true;draw()">+ Novo efetivo</button>`)+`
 <div class="card"><h2>Cadastro (${L.length})</h2>
 ${naipes().map(n=>{const G=L.filter(p=>n==="__none"?!p.inst:nOf(p.inst)===n);if(!G.length)return"";
 return `<details class="nd" ${(fl.cc&&fl.cc[n])||G.some(p=>p.id===edId)?"open":""} ontoggle="(fl.cc=fl.cc||{})['${esc(n)}']=this.open"><summary><span class="tt">${esc(nLbl(n))}</span> <span class="mut">${G.length}</span></summary>
 ${G.map(p=>p.id===edId?`<div class="pl2">${frm("e",p)}<div class="row"><button class="pri" onclick="saveE()">Guardar</button><button onclick="edId=null;draw()">Cancelar</button></div></div>`
-:`<div class="pl2 pr"><span class="ln">${v(p.posto)}; ${v(p.adido)}; ${v(p.ordem)}; ${v(p.nome)}${p.inst&&p.inst!==n?"; "+v(p.inst):""}</span><div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${p.id}')">⋯</button><div class="menu" id="m_${p.id}" hidden><button onclick="edId='${p.id}';draw()">Editar</button><button class="del" onclick="delP('${p.id}')">Remover</button></div></div></div>`).join("")}</details>`}).join("")||`<p class="mut">Ainda sem efetivos.</p>`}</div>`}
+:`<div class="pl2 pr"><span class="ln">${v(p.posto)}; ${v(p.adido)}; ${v(p.ordem)}; ${v(p.nome)}${p.inst&&p.inst!==n?"; "+v(p.inst):""}${p.g&&p.g!=="B"?` <span class="mut">(${p.g==="O"?"só orquestra":"banda + orquestra"})</span>`:""}</span><div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${p.id}')">⋯</button><div class="menu" id="m_${p.id}" hidden><button onclick="edId='${p.id}';draw()">Editar</button><button class="del" onclick="delP('${p.id}')">Remover</button></div></div></div>`).join("")}</details>`}).join("")||`<p class="mut">Ainda sem efetivos.</p>`}</div>`}
 function cm(){document.querySelectorAll(".menu").forEach(m=>m.hidden=true)}
 function tm(e,id){e.stopPropagation();const m=document.getElementById("m_"+id),was=!m.hidden;cm();m.hidden=was}
 document.addEventListener("click",cm);
@@ -168,12 +175,12 @@ function saveE(){const p=P(edId);if(!p)return;const o=$("#eO").value.trim(),n=$(
 if(!/^\d{7}$/.test(o))return alert("O Nº Ordem tem de ter exatamente 7 algarismos.");
 if(!n)return alert("Escreva o nome.");
 if(S.people.some(q=>q.id!==p.id&&q.ordem===o))return alert("Já existe outro efetivo com este Nº Ordem.");
-p.posto=$("#eP").value;p.adido=$("#eA").value.trim();p.ordem=o;p.nome=n;p.inst=$("#eI").value;edId=null;save();draw()}
+p.posto=$("#eP").value;p.adido=$("#eA").value.trim();p.ordem=o;p.nome=n;p.inst=$("#eI").value;p.g=$("#eG").value;edId=null;save();draw()}
 function addP(){const n=$("#nN").value.trim(),o=$("#nO").value.trim(),a=$("#nA").value.trim(),po=$("#nP").value,i=$("#nI").value;
 if(!/^\d{7}$/.test(o))return alert("O Nº Ordem tem de ter exatamente 7 algarismos.");
 if(!n)return alert("Escreva o nome.");
 if(S.people.some(q=>q.ordem===o))return alert("Já existe um efetivo com este Nº Ordem.");
-S.people.push({id:uid(),posto:po,adido:a,ordem:o,nome:n,inst:i});lastAdd={posto:po,inst:i};(fl.cc=fl.cc||{})[i?nOf(i):"__none"]=true;save();draw()}
+S.people.push({id:uid(),posto:po,adido:a,ordem:o,nome:n,inst:i,g:$("#nG").value});lastAdd={posto:po,inst:i,g:$("#nG").value};(fl.cc=fl.cc||{})[i?nOf(i):"__none"]=true;save();draw()}
 function edP(id,k,v){const p=P(id);if(!p)return;
 if(k==="ordem"){v=v.replace(/\D/g,"");
 if(!/^\d{7}$/.test(v)){alert("O Nº Ordem tem de ter exatamente 7 algarismos.");return draw()}
@@ -193,14 +200,15 @@ const hoje=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth(
 const DSM=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"],MSS=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
 const dif=d=>Math.round((new Date(d+"T00:00:00")-new Date(hoje()+"T00:00:00"))/864e5);
 const quando=d=>{const n=dif(d);return n===0?"hoje":n===1?"amanhã":"daqui a "+n+" dias"};
+function dtxt(f,d){if(f.ens&&f.ens.b&&f.ens.b!==f.data){const b=new Date(f.ens.b+"T12:00:00");return d.getMonth()===b.getMonth()?`${d.getDate()} a ${b.getDate()} de ${MSS[b.getMonth()]}`:`${d.getDate()} de ${MSS[d.getMonth()]} a ${b.getDate()} de ${MSS[b.getMonth()]}`}return `${DSM[d.getDay()]}, ${d.getDate()} de ${MSS[d.getMonth()]}`}
 const nNom=e=>e.n.filter(x=>x.s==="Nomeado").length;
 function openE(id){const e=EV(id);if(e&&e.montada)vw=id;else edit=id;draw();window.scrollTo(0,0)}
 function vEv(){if(edit)return fEv();if(vw)return vBanda();return cl?vEvAll():vEvHome()}
-function vEvHome(){const h=hoje(),up=S.events.map((e,i)=>({e,i})).filter(x=>x.e.data&&x.e.data>=h).sort((a,b)=>a.e.data.localeCompare(b.e.data)||a.i-b.i).map(x=>x.e),f=up[0];
+function vEvHome(){const h=hoje(),up=S.events.map((e,i)=>({e,i})).filter(x=>x.e.data&&fim(x.e)>=h).sort((a,b)=>a.e.data.localeCompare(b.e.data)||a.i-b.i).map(x=>x.e),f=up[0];
 const d=f?new Date(f.data+"T00:00:00"):null;
-const hero=f?`<div class="hero"><div class="mw" style="position:absolute;top:10px;right:10px"><button class="dots" aria-label="Opções" onclick="tm(event,'${f.id}')">⋯</button><div class="menu" id="m_${f.id}" hidden><button onclick="edit='${f.id}';draw()">Editar</button><button class="del" onclick="delE('${f.id}')">Remover</button></div></div><div class="hl2">A seguir · ${quando(f.data)}</div><div class="hn">${esc(f.nome||f.local||"Sem nome")}</div><div class="hl2">${DSM[d.getDay()]}, ${d.getDate()} de ${MSS[d.getMonth()]}${f.local&&f.nome?" · "+esc(f.local):""}</div><div class="hl2">${f.viag!=null?"Viagem "+fmtV(f.viag)+" · ":""}${nNom(f)} nomeados${f.montada?"":" · <b>por montar</b>"}</div><button class="hb" onclick="openE('${f.id}')">Abrir</button></div>`:`<div class="card"><p class="mut" style="margin:0">${S.events.length?"Não há cerimónias futuras.":"Ainda sem cerimónias."} Crie uma nova ou veja o histórico em “Ver todas”.</p></div>`;
-const rest=up.slice(1,3).map(e=>`<div class="pl2 pr cm"><div class="dt" onclick="openE('${e.id}')"><b>${e.data.slice(8,10)}</b><span>${MSS[+e.data.slice(5,7)-1].slice(0,3)}</span></div><div class="ln" onclick="openE('${e.id}')" style="cursor:pointer"><div class="tt">${esc(e.nome||e.local||"Sem nome")}</div><div class="mut">${e.local&&e.nome?esc(e.local)+" · ":""}${e.viag!=null?"viagem "+fmtV(e.viag)+" · ":""}${e.montada?nNom(e)+" nomeados":"<span class=\"lo\">por montar</span>"}</div></div><div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${e.id}')">⋯</button><div class="menu" id="m_${e.id}" hidden><button onclick="edit='${e.id}';draw()">Editar</button><button class="del" onclick="delE('${e.id}')">Remover</button></div></div></div>`).join("");
-return hero+(rest?`<div class="sh">Depois</div>${rest}`:"")+`<button class="lkb" onclick="cl=true;draw();window.scrollTo(0,0)"><span>Ver todas (${S.events.length})</span><span>›</span></button><button class="pri nb" onclick="newEv()">+ Nova cerimónia</button>`}
+const hero=f?`<div class="hero"><div class="mw" style="position:absolute;top:10px;right:10px"><button class="dots" aria-label="Opções" onclick="tm(event,'${f.id}')">⋯</button><div class="menu" id="m_${f.id}" hidden><button onclick="edit='${f.id}';draw()">Editar</button><button class="del" onclick="delE('${f.id}')">Remover</button></div></div><div class="hl2">A seguir · ${dif(f.data)<0?"a decorrer":quando(f.data)}</div><div class="hn">${esc(f.nome||f.local||"Sem nome")}</div><div class="hl2">${f.tipo?esc(tl(f))+" · ":""}${dtxt(f,d)}${f.local&&f.nome?" · "+esc(f.local):""}</div><div class="hl2">${f.ens?ensTxt(f)+" · ":f.viag!=null?"Viagem "+fmtV(f.viag)+" · ":""}${nNom(f)} nomeados${f.montada?"":" · <b>por montar</b>"}</div><button class="hb" onclick="openE('${f.id}')">Abrir</button></div>`:`<div class="card"><p class="mut" style="margin:0">${S.events.length?"Não há serviços futuros.":"Ainda sem serviços."} Crie uma nova ou veja o histórico em “Ver todas”.</p></div>`;
+const rest=up.slice(1,3).map(e=>`<div class="pl2 pr cm"><div class="dt" onclick="openE('${e.id}')"><b>${e.data.slice(8,10)}</b><span>${MSS[+e.data.slice(5,7)-1].slice(0,3)}</span></div><div class="ln" onclick="openE('${e.id}')" style="cursor:pointer"><div class="tt">${esc(e.nome||e.local||"Sem nome")}</div><div class="mut">${e.tipo?esc(tl(e))+" · ":""}${e.local&&e.nome?esc(e.local)+" · ":""}${e.ens?ensTxt(e)+" · ":e.viag!=null?"viagem "+fmtV(e.viag)+" · ":""}${e.montada?nNom(e)+" nomeados":"<span class=\"lo\">por montar</span>"}</div></div><div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${e.id}')">⋯</button><div class="menu" id="m_${e.id}" hidden><button onclick="edit='${e.id}';draw()">Editar</button><button class="del" onclick="delE('${e.id}')">Remover</button></div></div></div>`).join("");
+return hero+(rest?`<div class="sh">Depois</div>${rest}`:"")+`<button class="lkb" onclick="cl=true;draw();window.scrollTo(0,0)"><span>Ver todas (${S.events.length})</span><span>›</span></button><button class="pri nb" onclick="novoServ()">+ Novo serviço</button>`}
 function vEvAll(){const L=S.events;
 return `<div><div class="row"><input id="cq" type="search" placeholder="Pesquisar: nome, local, pessoa, nota…" value="${esc(cf.q)}" oninput="cf.q=this.value;evR()"></div>
 <details ${cf.a||cf.b?"open":""}><summary class="mut" style="cursor:pointer;padding:4px 0 8px">Filtrar por datas</summary><div class="row"><input type="date" value="${cf.a}" onchange="cf.a=this.value;evR()"><input type="date" value="${cf.b}" onchange="cf.b=this.value;evR()"><button onclick="cf={q:'',a:'',b:''};draw()">Limpar</button></div></details>
@@ -212,9 +220,12 @@ function evM(e){if(cf.a&&e.data<cf.a)return false;if(cf.b&&e.data>cf.b)return fa
 const pp=e.n.map(x=>{const p=P(x.p);return p?p.posto+" "+p.nome+" "+p.adido:""}).join(" "),h=nrm([e.nome,e.local,e.tipo,e.notas,fd(e.data),pp].join(" "));return q.split(/\s+/).every(w=>h.includes(w))}
 function evC(){const t=S.events.length,m=S.events.filter(evM).length;return m===t?`${t} cerimónias`:`${m} de ${t} cerimónias`}
 function evR(){$("#evl").innerHTML=evL();$("#evc").textContent=evC()}
-function evL(){const L=S.events.filter(evM);const ML=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];return L.map((e,i)=>{const mh=(i===0||L[i-1].data.slice(0,7)!==e.data.slice(0,7))&&e.data?`<div class="sh">${ML[+e.data.slice(5,7)-1]||""} ${e.data.slice(0,4)}</div>`:"";const n=e.n.filter(x=>x.s==="Nomeado").length;return mh+`<div class="pl2 pr cm"><div class="dt" onclick="vw='${e.id}';draw()"><b>${e.data?e.data.slice(8,10):"–"}</b><span>${e.data?ML[+e.data.slice(5,7)-1].slice(0,3):""}</span></div><div class="ln" onclick="vw='${e.id}';draw()" style="cursor:pointer"><div class="tt">${esc(e.nome||e.local||"Sem nome")}</div><div class="mut">${e.local&&e.nome?esc(e.local)+" · ":""}${e.viag!=null?"viagem "+fmtV(e.viag)+" · ":""}${n} nomeados${e.montada?"":" · <span class=\"lo\">por montar</span>"}</div></div>
-<div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${e.id}')">⋯</button><div class="menu" id="m_${e.id}" hidden><button onclick="edit='${e.id}';draw()">Editar</button><button class="del" onclick="delE('${e.id}')">Remover</button></div></div></div>`}).join("")||`<p class="mut">${S.events.length?"Nenhuma cerimónia corresponde à pesquisa.":"Ainda sem cerimónias."}</p>`}
-function newEv(){const e={id:uid(),data:new Date().toISOString().slice(0,10),nome:"",local:"",tipo:"Cerimónia",viag:null,n:[],montada:false};S.events.push(e);edit=e.id;vw=null;save();draw()}
+function evL(){const L=S.events.filter(evM);const ML=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];return L.map((e,i)=>{const mh=(i===0||L[i-1].data.slice(0,7)!==e.data.slice(0,7))&&e.data?`<div class="sh">${ML[+e.data.slice(5,7)-1]||""} ${e.data.slice(0,4)}</div>`:"";const n=e.n.filter(x=>x.s==="Nomeado").length;return mh+`<div class="pl2 pr cm"><div class="dt" onclick="vw='${e.id}';draw()"><b>${e.data?e.data.slice(8,10):"–"}</b><span>${e.data?ML[+e.data.slice(5,7)-1].slice(0,3):""}</span></div><div class="ln" onclick="vw='${e.id}';draw()" style="cursor:pointer"><div class="tt">${esc(e.nome||e.local||"Sem nome")}</div><div class="mut">${e.tipo?esc(tl(e))+" · ":""}${e.local&&e.nome?esc(e.local)+" · ":""}${e.ens?ensTxt(e)+" · ":e.viag!=null?"viagem "+fmtV(e.viag)+" · ":""}${n} nomeados${e.montada?"":" · <span class=\"lo\">por montar</span>"}</div></div>
+<div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${e.id}')">⋯</button><div class="menu" id="m_${e.id}" hidden><button onclick="edit='${e.id}';draw()">Editar</button><button class="del" onclick="delE('${e.id}')">Remover</button></div></div></div>`}).join("")||`<p class="mut">${S.events.length?"Nenhum serviço corresponde à pesquisa.":"Ainda sem serviços."}</p>`}
+const TIPOS=["Cerimónia","Concerto","Ensaio"];
+function novoServ(){let o=$("#nsv");if(!o){o=document.createElement("div");o.id="nsv";document.body.appendChild(o)}
+o.innerHTML=`<div class="bg" onclick="$('#nsv').hidden=true"></div><div class="sheet" role="dialog" aria-label="Novo serviço"><div class="tt" style="font-size:18px;margin-bottom:10px">Novo serviço</div>${TIPOS.map(t=>`<button class="op" onclick="$('#nsv').hidden=true;newEv('${t}')">${t}</button>`).join("")}<button class="cn" onclick="$('#nsv').hidden=true">Cancelar</button></div>`;o.hidden=false}
+function newEv(t){const e={id:uid(),data:new Date().toISOString().slice(0,10),nome:"",local:"",tipo:TIPOS.includes(t)?t:"Cerimónia",viag:null,n:[],montada:false};if(t==="Concerto"||t==="Ensaio")e.grupo="Banda";if(t==="Ensaio"){e.ens={a:e.data,b:e.data,fim:false,h:2,dias:[]};genDias(e);e.local="Banda"}S.events.push(e);edit=e.id;vw=null;save();draw()}
 function delE(id){if(!confirm("Apagar esta cerimónia?"))return;const e=EV(id);const bid=e?bin("e",e):null;(S.log=S.log||[]).push({t:new Date().toISOString(),a:`Cerimónia apagada: ${e?fd(e.data)+" · "+(e.nome||e.local||"Sem nome")+" ("+e.n.filter(x=>x.s==="Nomeado").length+" nomeados)":id}`});S.events=S.events.filter(e=>e.id!==id);save();draw();if(bid)toast("Cerimónia apagada",()=>binRest(bid))}
 
 /* Fotos das listas (IndexedDB, só neste dispositivo) */
@@ -237,37 +248,81 @@ const thumbs=(e,rm)=>(e.fotos||[]).map(f=>`<span class="th"><img data-f="${f.id}
 function stl(s){return s==="Nomeado"?["n","Nomeado"]:s==="Reserva"?["r","Reserva"]:["","—"]}
 function cnt(e){const n=e.n.filter(x=>x.s==="Nomeado").length,r=e.n.filter(x=>x.s==="Reserva").length;return `${n} nomeados · ${r} em reserva`}
 let bmC={};
-function nsum(e,n){const ids=new Set(S.people.filter(p=>n==="__none"?!p.inst:nOf(p.inst)===n).map(p=>p.id)),a=e.n.filter(x=>x.s==="Nomeado"&&ids.has(x.p)).length,r=e.n.filter(x=>x.s==="Reserva"&&ids.has(x.p)).length;return `${ids.size} efetivo(s)`+(a?` · ${a} nomeado(s)`:"")+(r?` · ${r} reserva`:"")}
+function nsum(e,n){const ids=new Set(S.people.filter(p=>(n==="__none"?!p.inst:nOf(p.inst)===n)&&inG(p,e)).map(p=>p.id)),a=e.n.filter(x=>x.s==="Nomeado"&&ids.has(x.p)).length,r=e.n.filter(x=>x.s==="Reserva"&&ids.has(x.p)).length;return `${ids.size} efetivo(s)`+(a?` · ${a} nomeado(s)`:"")+(r?` · ${r} reserva`:"")}
 function updSum(e){document.querySelectorAll(".ns").forEach(el=>el.textContent=nsum(e,el.dataset.n))}
 function balMap(ex){const sa=fl.a,sb=fl.b,m={};fl.a="";fl.b="";try{naipes().forEach(v=>{const d=calcEq(v,{ex});d.r.forEach(x=>{m[x.p.id]={pt:x.pt,st:stT(x,d.avg)}})})}finally{fl.a=sa;fl.b=sb}return m}
 function avHtml(e){const L=e.n.filter(x=>x.s==="Nomeado").map(x=>P(x.p)).filter(p=>p&&bmC[p.id]&&bmC[p.id].st==="acima");
 return L.length?`<div class="wr2">⚠ Já acima da média no seu naipe: <b>${L.map(p=>esc(p.posto+" "+p.nome)).join(", ")}</b></div>`:`<p class="mut" style="margin:6px 0">Nenhum nomeado está acima da média.</p>`}
 function avUpd(){const e=EV(edit),el=$("#av");if(e&&el)el.innerHTML=avHtml(e)}
+const tipoSel=e=>fld("Tipo","",`<select onchange="setTipo(this.value)">${(TIPOS.includes(e.tipo)||!e.tipo?TIPOS:[...TIPOS,e.tipo]).map(t=>`<option ${t===e.tipo?"selected":""}>${esc(t)}</option>`).join("")}</select>`);
+
+/* Grupo e ligação ensaio-concerto */
+const inG=(p,e)=>{const g=p.g||"B";return e.grupo==="Orquestra"?g!=="B":g!=="O"};
+const tl=e=>(e.tipo||"")+(e.grupo&&e.tipo!=="Cerimónia"?" · "+e.grupo:"");
+const grupoSel=e=>fld("Grupo","",`<select onchange="setGrupo(this.value)">${["Banda","Orquestra"].map(g=>`<option ${(e.grupo||"Banda")===g?"selected":""}>${g}</option>`).join("")}</select>`);
+const concSel=e=>fld("Concerto","",`<select onchange="setConc(this.value)"><option value="">Nenhum</option>${S.events.filter(c=>c.tipo==="Concerto"&&c.id!==e.id).sort((a,b)=>String(b.data).localeCompare(String(a.data))).map(c=>`<option value="${c.id}" ${e.conc===c.id?"selected":""}>${fd(c.data)} · ${esc(c.nome||c.local||"Concerto")}</option>`).join("")}</select>`);
+function setGrupo(v){const e=EV(edit);if(!e)return;const rem=e.n.filter(x=>{const p=P(x.p);return p&&!inG(p,{grupo:v})});
+if(rem.length&&!confirm(rem.length+" pessoa(s) nomeada(s) não fazem parte "+(v==="Orquestra"?"da orquestra":"da banda")+" e serão retiradas. Continuar?"))return draw();
+e.n=e.n.filter(x=>{const p=P(x.p);return !p||inG(p,{grupo:v})});e.grupo=v;if(e.ens)e.local=v;lg(e,"Grupo: "+v);save();draw()}
+function setConc(id){const e=EV(edit);if(!e)return;const c=id?EV(id):null;e.conc=c?c.id:undefined;
+if(c){if(c.grupo&&c.grupo!==e.grupo){e.grupo=c.grupo;e.local=e.grupo}
+if(c.n.length&&(!e.n.length||confirm("Copiar para este ensaio os nomeados do concerto?")))e.n=c.n.map(x=>({...x}));
+e.n=e.n.filter(x=>{const p=P(x.p);return !p||inG(p,e)});if(!e.nome)e.nome="Ensaios · "+(c.nome||c.local||"Concerto")}
+lg(e,"Concerto associado: "+(c?(c.nome||c.local||"Concerto"):"nenhum"));save();draw()}
+function novoEns(cid){const c=EV(cid);if(!c)return;newEv("Ensaio");const e=EV(edit);e.conc=cid;e.grupo=c.grupo||"Banda";e.local=e.grupo;e.nome="Ensaios · "+(c.nome||c.local||"Concerto");e.n=c.n.map(x=>({...x}));save();draw()}
+function ensDe(e){if(e.tipo!=="Concerto")return"";const L=S.events.filter(x=>x.conc===e.id).sort((a,b)=>String(a.data).localeCompare(String(b.data))),h=L.reduce((t,x)=>t+(x.ens?x.ens.dias.length*x.ens.h:0),0);
+return `<div class="ih" style="margin-top:12px">Ensaios</div>${L.map(x=>`<div class="pl2 pr" onclick="vw='${x.id}';draw()" style="cursor:pointer"><div class="ln"><div class="tt">${esc(x.nome||"Ensaios")}</div><div class="mut">${fd(x.data)}${x.ens&&x.ens.b!==x.data?" a "+fd(x.ens.b):""}${x.ens?" · "+ensTxt(x):""}</div></div><span class="mut" style="font-size:24px">›</span></div>`).join("")||`<p class="mut">Sem ensaios ligados.</p>`}${L.length?`<p class="mut">Total: ${hTx(h)} h de ensaio</p>`:""}<div class="row" style="margin:6px 0 0"><button onclick="novoEns('${e.id}')">+ Adicionar ensaios</button></div>`}
+/* Ensaios */
+const isoD=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const fim=e=>(e.ens&&e.ens.b)||e.data;
+function rangeD(a,b){const o=[];if(!a||!b||b<a)return o;const d=new Date(a+"T12:00:00");for(let i=0;i<62&&isoD(d)<=b;i++){o.push(isoD(d));d.setDate(d.getDate()+1)}return o}
+function genDias(e){const n=e.ens;n.dias=rangeD(n.a,n.b).filter(x=>n.fim||![0,6].includes(new Date(x+"T12:00:00").getDay()))}
+const hTx=h=>String(Math.round(h*10)/10).replace(".",",");
+const ensTxt=e=>{const n=e.ens.dias.length;return `${n} ${n===1?"ensaio":"ensaios"} de ${hTx(e.ens.h)} h`};
+function setTipo(v){const e=EV(edit);if(!e)return;up("tipo",v);if((v==="Ensaio"||v==="Concerto")&&!e.grupo)e.grupo="Banda";if(v==="Cerimónia")delete e.grupo;if(v!=="Ensaio")delete e.conc;
+if(v==="Ensaio"&&!e.ens){e.ens={a:e.data,b:e.data,fim:false,h:2,dias:[]};genDias(e);e.local=e.grupo||"Banda";e.viag=null;e.viagInfo=""}
+else if(v!=="Ensaio"&&e.ens){e.ens=null;if(e.local==="Banda"||e.local==="Orquestra")e.local=""}
+save();draw()}
+function ensUp(k,v){const e=EV(edit);if(!e||!e.ens)return;const n=e.ens;
+if(k==="h"){const h=parseFloat(String(v).replace(",","."));if(!(h>0)){alert("Indique a duração em horas.");return draw()}n.h=h;save();ensSum(e);return}
+if(k==="fim")n.fim=!!v;else n[k]=v;
+if(!n.a)n.a=e.data;if(!n.b||n.b<n.a)n.b=n.a;e.data=n.a;genDias(e);save();draw()}
+function ensTg(d,btn){const e=EV(edit);if(!e||!e.ens)return;const n=e.ens,i=n.dias.indexOf(d);if(i<0){n.dias.push(d);n.dias.sort()}else n.dias.splice(i,1);btn.classList.toggle("on",i<0);save();ensSum(e)}
+function ensSum(e){const el=$("#ens-sum");if(el)el.innerHTML=`<b>${ensTxt(e)}</b> · ${hTx(e.ens.dias.length*e.ens.h)} h no total · na ${e.grupo||"Banda"}, sem deslocação`}
+function ensF(e){const n=e.ens,days=rangeD(n.a,n.b),DS=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+return `<div class="g3" style="grid-template-columns:1fr 1fr">${fld("Primeiro dia","",`<input type="date" value="${n.a}" onchange="ensUp('a',this.value)">`)}${fld("Último dia","",`<input type="date" value="${n.b}" onchange="ensUp('b',this.value)">`)}</div>
+<div class="g3" style="grid-template-columns:1fr 1fr">${fld("Duração de cada ensaio (h)","",`<input type="number" step="0.5" min="0.5" inputmode="decimal" value="${n.h}" onchange="ensUp('h',this.value)">`)}${tipoSel(e)}</div>
+<div class="g3" style="grid-template-columns:1fr 1fr">${grupoSel(e)}${concSel(e)}</div>
+<label class="chk"><input type="checkbox" ${n.fim?"checked":""} onchange="ensUp('fim',this.checked)"> Incluir sábados e domingos</label>
+<p class="mut" style="margin:6px 0">Local: ${e.grupo||"Banda"} (sem deslocação). Toque nos dias para marcar ou desmarcar ensaios (feriados, folgas).</p>
+<div class="dcs">${days.map(d=>{const x=new Date(d+"T12:00:00");return `<button class="dc ${n.dias.includes(d)?"on":""}" onclick="ensTg('${d}',this)"><small>${DS[x.getDay()]}</small>${x.getDate()}</button>`}).join("")||`<span class="mut">Indique os dias.</span>`}</div>
+<p class="mut" id="ens-sum" style="margin-top:8px"></p>`}
 function fEv(){const e=EV(edit);if(!e){edit=null;return vEv()}bmC=balMap(e.id);
 const st=id=>(e.n.find(x=>x.p===id)||{}).s||"";let last=null;
 const pk=p=>{const[c,l]=stl(st(p.id)),bm=bmC[p.id];return `<div class="pk ${c}" id="r_${p.id}" onclick="cyc('${p.id}')"><span class="ln">${esc(p.posto||"–")} · ${esc(p.adido||"–")} · ${esc(p.nome)}${p.inst&&nOf(p.inst)!==p.inst?` <span class="mut">(${esc(p.inst)})</span>`:""}${bm&&bm.st&&bm.st!=="na média"?` <span class="tag ${bm.st==="acima"?"hi":"lo"}">${bm.st}</span>`:""}</span><span class="bd" id="b_${p.id}">${l}</span></div>`};
-const rows=naipes().map(n=>{const G=S.people.filter(p=>n==="__none"?!p.inst:nOf(p.inst)===n).sort(cmpH);if(!G.length)return"";
+const rows=naipes().map(n=>{const G=S.people.filter(p=>(n==="__none"?!p.inst:nOf(p.inst)===n)&&inG(p,e)).sort(cmpH);if(!G.length)return"";
 return `<details class="nd" ${fl.mo&&fl.mo[n]?"open":""} ontoggle="(fl.mo=fl.mo||{})['${esc(n)}']=this.open"><summary><span class="tt">${esc(nLbl(n))}</span> <span class="mut ns" data-n="${esc(n)}">${nsum(e,n)}</span></summary>${G.map(pk).join("")}</details>`}).join("");
-return `<div class="card"><h2>${e.montada?"Editar cerimónia":"Nova cerimónia"}</h2><div class="row">${fld("Nome da cerimónia","",`<input value="${esc(e.nome)}" placeholder="Ex.: Cartaxo – CTER Santarém" onchange="up('nome',this.value)">`)}</div>
-<div class="g3" style="grid-template-columns:1fr 1fr">
+return `<div class="card"><h2>${e.montada?"Editar serviço":"Novo serviço"}</h2><div class="row">${fld("Nome do serviço","",`<input value="${esc(e.nome)}" placeholder="Ex.: Cartaxo – CTER Santarém" onchange="up('nome',this.value)">`)}</div>
+${e.ens?ensF(e):`<div class="g3" style="grid-template-columns:1fr 1fr">
 ${fld("Local","",`<input value="${esc(e.local)}" placeholder="Ex.: Cartaxo" onchange="up('local',this.value);calcViagem()">`)}
 ${fld("Data","",`<input type="date" value="${e.data}" onchange="up('data',this.value)">`)}</div>
 <div class="g3" style="grid-template-columns:1fr 1fr">
 ${fld("Viagem (ida)","",`<input id="vg" value="${e.viag!=null?fmtV(e.viag):""}" placeholder="—" onchange="setV(this.value)">`)}
-${fld("Tipo","",`<input value="${esc(e.tipo)}" onchange="up('tipo',this.value)">`)}</div>
+${fld("Tipo","",`<select onchange="setTipo(this.value)">${(TIPOS.includes(e.tipo)||!e.tipo?TIPOS:[...TIPOS,e.tipo]).map(t=>`<option ${t===e.tipo?"selected":""}>${esc(t)}</option>`).join("")}</select>`)}</div>
+${e.tipo==="Concerto"?`<div class="row">${grupoSel(e)}</div>`:""}
 <p class="mut" id="vst">${e.viagInfo?esc(e.viagInfo):"A viagem é calculada ao indicar o local, a partir da Calçada da Ajuda. Pode corrigir o valor à mão."}</p>
-<div class="row"><button onclick="calcViagem()">Calcular viagem</button></div></div>
+<div class="row"><button onclick="calcViagem()">Calcular viagem</button></div>`}</div>
 <div class="card"><h2>Lista original (foto)</h2>
 <p class="mut">Guarde a foto da lista tal como foi publicada, como prova. Fica só neste telemóvel e <b>não entra na cópia de segurança</b>.</p>
 <div>${thumbs(e,true)}</div><p class="mut" id="fst"></p>
 <label class="row" style="margin:0"><span class="pri" style="display:block;text-align:center;padding:9px 12px;border-radius:8px;cursor:pointer;background:var(--ac);color:#fff">+ Adicionar foto</span><input type="file" accept="image/*" multiple hidden onchange="addFoto(this)"></label></div>
 <div class="card"><h2>Notas</h2>${fld("Observações (trocas, alterações não comunicadas…)","",`<textarea class="nt" placeholder="Ex.: troca entre X e Y, não comunicada" onchange="up('notas',this.value)">${esc(e.notas||"")}</textarea>`)}</div>
-<div class="card"><h2>Montar a banda</h2>
+<div class="card"><h2>Montar ${e.grupo==="Orquestra"?"a orquestra":"a banda"}</h2>
 <p class="mut">Toque numa pessoa para a marcar: uma vez <b>Nomeado</b>, duas vezes <b>Reserva</b>, três vezes para retirar.</p>
 <p id="cnt"><b>${cnt(e)}</b></p>
 <div id="av">${avHtml(e)}</div>
 ${rows||`<p class="mut">Adicione primeiro os efetivos no separador Efetivos.</p>`}
-<div class="row" style="margin-top:12px"><button class="pri" onclick="montar()">Montar Banda</button><button onclick="edit=null;draw()">Voltar</button></div></div>`}
+<div class="row" style="margin-top:12px"><button class="pri" onclick="montar()">Montar ${e.grupo==="Orquestra"?"Orquestra":"Banda"}</button><button onclick="edit=null;draw()">Voltar</button></div></div>`}
 const fmtV=m=>m<60?m+"min":Math.floor(m/60)+"h "+String(m%60).padStart(2,"0")+"min";
 function parseV(t){t=String(t).trim().toLowerCase();let m=t.match(/^(\d+)\s*h\s*(\d{1,2})?/);if(m)return +m[1]*60+(+m[2]||0);m=t.match(/^(\d+)\s*(min|m)?$/);return m?+m[1]:null}
 function setV(v){const e=EV(edit);if(!v.trim()){e.viag=null;e.viagInfo="";save();return}const m=parseV(v);if(m==null){alert("Escreva a duração, por exemplo 1h 05min ou 65.");$("#vg").value=e.viag!=null?fmtV(e.viag):"";return}if(m!==e.viag)lg(e,"Viagem: "+(e.viag!=null?fmtV(e.viag):"–")+" → "+fmtV(m));e.viag=m;e.viagInfo="Valor introduzido à mão.";$("#vg").value=fmtV(m);$("#vst").textContent=e.viagInfo;save()}
@@ -303,15 +358,18 @@ let last=null;const body=N.map(p=>{const h=p.inst||"Sem instrumento",t=h!==last?
 const kv=(k,v)=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`;
 return `<div class="card"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><h2 style="flex:1;margin:0">${esc(e.nome||"Banda nomeada")}</h2>
 <button id="eye" class="dots" style="flex:0 0 auto;min-width:0;padding:6px 10px" aria-label="Ver nomeações" aria-pressed="false" title="Ver nomeações" onclick="tgl()">${EYE}</button></div>
-<div style="margin-top:8px">${kv("Tipo",esc(e.tipo)||"–")}${kv("Local",esc(e.local)||"–")}${kv("Data",fd(e.data))}${kv("Viagem (ida)",e.viag!=null?fmtV(e.viag):"–")}${kv("Total nomeados",N.length+(R.length?` <span class="mut">(+${R.length} em reserva)</span>`:""))}</div>
+<div style="margin-top:8px">${kv("Tipo",esc(tl(e))||"–")}${e.ens?kv("Local",(e.grupo||"Banda")+" (sem deslocação)")+(e.conc&&EV(e.conc)?kv("Concerto",`<a style="color:var(--ok);cursor:pointer" onclick="vw='${e.conc}';draw()">${esc(EV(e.conc).nome||EV(e.conc).local||"Concerto")}</a>`):"")+kv("Período",fd(e.data)+" a "+fd(e.ens.b))+kv("Ensaios",ensTxt(e))+kv("Total",hTx(e.ens.dias.length*e.ens.h)+" h")+kv("Dias",e.ens.dias.map(x=>fd(x).slice(0,5)).join(", ")):kv("Local",esc(e.local)||"–")+kv("Data",fd(e.data))+kv("Viagem (ida)",e.viag!=null?fmtV(e.viag):"–")}${kv("Total nomeados",N.length+(R.length?` <span class="mut">(+${R.length} em reserva)</span>`:""))}</div>
 ${e.notas?`<div class="ih">Notas</div><div style="white-space:pre-wrap">${esc(e.notas)}</div>`:""}${(e.fotos||[]).length?`<div class="ih">Lista original</div><div>${thumbs(e,false)}</div>`:""}
+${ensDe(e)}
 ${(e.log||[]).length?`<details class="lgd" style="margin-top:12px"><summary><b>Registo de alterações</b> (${e.log.length})</summary>${[...e.log].reverse().map(l=>`<div class="hl mut"><b>${fdt(l.t)}</b> · ${esc(l.a)}</div>`).join("")}</details>`:""}
 <div id="lista" hidden style="margin-top:12px">${body||`<p class="mut">Sem nomeados.</p>`}
 ${R.length?`<div class="ih">Reserva</div>${R.map(p=>`<div class="pl2">${ln(p)} <span class="mut">(${esc(p.inst||"–")})</span></div>`).join("")}`:""}</div>
 <div class="row" style="margin-top:14px"><button class="pri" onclick="vw=null;draw()">Voltar</button></div></div>`}
 const HV=()=>{const h=S.cfg&&parseFloat(S.cfg.h);return h>0?h:2};
 const TH=()=>{const p=S.cfg&&parseFloat(S.cfg.p);return p>0&&p<=100?p:25};
-const peso=(e,h)=>1+2*(e.viag||0)/60/(h||HV());
+const HE=()=>{const h=S.cfg&&parseFloat(S.cfg.he);return h>0?h:4};
+const peso=(e,h)=>e.ens?(e.ens.dias.length*e.ens.h)/HE():1+2*(e.viag||0)/60/(h||HV());
+function setHe(v){const h=parseFloat(String(v).replace(",","."));if(!(h>0)){alert("Indique um número de horas maior que zero.");return draw()}S.cfg=S.cfg||{};S.cfg.he=h;save();draw()}
 function setP(v){const p=parseFloat(String(v).replace(",","."));if(!(p>0&&p<=100)){alert("Indique uma percentagem entre 1 e 100.");return draw()}S.cfg=S.cfg||{};S.cfg.p=p;save();draw()}
 function applySim(){const h=fl.sh>0?fl.sh:HV(),p=fl.sp>0&&fl.sp<=100?fl.sp:TH();if(!confirm("Aplicar "+h+" hora(s) por ponto e limite de alertas de "+p+"%? Isto recalcula todo o histórico e os PDFs seguintes."))return;S.cfg=S.cfg||{};S.cfg.h=h;S.cfg.p=p;fl.sh=0;fl.sp=0;save();draw()}
 function setH(v){const h=parseFloat(String(v).replace(",","."));if(!(h>0)){alert("Indique um número de horas maior que zero.");return draw()}S.cfg=S.cfg||{};S.cfg.h=h;save();draw()}
@@ -320,7 +378,7 @@ function naipes(){const st=new Set(S.people.map(p=>nOf(p.inst))),a=INSTR.filter(
 const nLbl=v=>v==="__none"?"Sem instrumento":v;
 function calcEq(n,o){if(n===undefined)n=fl.n;const hh=o&&o.h>0?o.h:HV();if(n&&!naipes().includes(n))n="";
 const pp=S.people.filter(p=>!n||(n==="__none"?!p.inst:nOf(p.inst)===n)),ids=new Set(pp.map(p=>p.id));
-const ev=S.events.filter(e=>(!fl.a||e.data>=fl.a)&&(!fl.b||e.data<=fl.b)&&!(o&&o.ex&&e.id===o.ex)),sv=ev.filter(e=>e.viag==null&&e.n.some(x=>x.s==="Nomeado"&&ids.has(x.p))).length;
+const ev=S.events.filter(e=>(!fl.a||e.data>=fl.a)&&(!fl.b||e.data<=fl.b)&&!(o&&o.ex&&e.id===o.ex)),sv=ev.filter(e=>e.viag==null&&!e.ens&&e.n.some(x=>x.s==="Nomeado"&&ids.has(x.p))).length;
 const r=pp.map(p=>{let f=0,rs=0,vg=0,pt=0;ev.forEach(e=>{const x=e.n.find(n=>n.p===p.id);if(!x)return;if(x.s==="Nomeado"){f++;vg+=2*(e.viag||0);pt+=peso(e,hh)}else if(x.s==="Reserva")rs++});return{p,f,rs,vg,pt}}).sort((a,b)=>b.pt-a.pt||b.f-a.f);
 const tot=r.reduce((s,x)=>s+x.pt,0),avg=r.length?tot/r.length:0,mx=Math.max(1e-9,...r.map(x=>x.pt)),fair=r.length?100/r.length:0;
 return{ev,sv,r,tot,avg,mx,fair,pp}}
@@ -340,6 +398,7 @@ const per=`<div class="card"><h2>Período</h2>${dates}
 const perD=`<div class="card"><h2>Período</h2>${dates}<p class="mut">${ev.length} cerimónias no período. Contam as nomeações que constam nas listas, não a presença efetiva.</p></div>`;
 const expl=`<div class="card"><h2>Como se calcula o esforço</h2>
 <p class="mut">Cada nomeação vale 1 ponto, mais um agravante pela viagem, contando ida e volta. A cada <input type="number" step="0.5" min="0.5" inputmode="decimal" value="${HV()}" style="width:70px;padding:3px 6px" onchange="setH(this.value)"> horas de viagem (ida e volta) soma-se mais 1 ponto. Exemplo: com ${HV()} ${HV()===1?"hora":"horas"}, uma cerimónia com 20 min de ida vale ${(1+2*20/60/HV()).toFixed(2)} pontos e uma com 5 h de ida vale ${(1+2*300/60/HV()).toFixed(2)}. A reserva não conta. Os alertas “acima” e “abaixo” aparecem quando os pontos de alguém se afastam mais de <input type="number" step="1" min="1" max="100" inputmode="numeric" value="${TH()}" style="width:64px;padding:3px 6px" onchange="setP(this.value)"> % da média (com uma folga mínima de 0,5 pontos).</p>
+<p class="mut">Nos ensaios não há viagem: a cada <input type="number" step="0.5" min="0.5" inputmode="decimal" value="${HE()}" style="width:70px;padding:3px 6px" onchange="setHe(this.value)"> horas de ensaio soma-se 1 ponto (por exemplo, uma semana com 5 ensaios de 2 h vale ${(10/HE()).toFixed(1)} pontos).</p>
 ${sv?`<p class="mut"><b>${sv}</b> cerimónia(s) sem viagem preenchida contam só 1 ponto.</p>`:""}</div>`;
 const sH=fl.sh>0?fl.sh:HV(),sP=fl.sp>0&&fl.sp<=100?fl.sp:TH(),oS={h:sH,p:sP},same=sH===HV()&&sP===TH();
 const sumT=(q,p)=>{if(!q.tot)return"sem nomeações";const ac=q.r.filter(x=>stT(x,q.avg,p)==="acima").length,ab=q.r.filter(x=>stT(x,q.avg,p)==="abaixo").length;return ac||ab?[ac?ac+" acima":"",ab?ab+" abaixo":""].filter(Boolean).join(" · "):"equilibrado"};
@@ -354,6 +413,7 @@ ${same?`<p class="mut">Os valores simulados são iguais aos atuais (${HV()} h po
 if(!inN){
 const NP=naipes();
 const rows=NP.map((v,i)=>{const q=calcEq(v),ac=q.r.filter(x=>stT(x,q.avg)==="acima").length,ab=q.r.filter(x=>stT(x,q.avg)==="abaixo").length,nm=q.r.reduce((t,x)=>t+x.f,0);
+if(!q.pp.length)return"";
 const tg=!q.tot?`<span class="tag">sem nomeações</span>`:(ac||ab)?`${ac?`<span class="tag hi">${ac} acima</span> `:""}${ab?`<span class="tag lo">${ab} abaixo</span>`:""}`:`<span class="tag ok">equilibrado</span>`;
 return `<div class="pl2 pr" onclick="openN(${i})" style="cursor:pointer"><div class="ln"><div class="tt">${esc(nLbl(v))}</div><div class="mut">${q.pp.length} efetivo(s) · ${nm} nomeações · média ${q.avg.toFixed(1)} pts</div><div style="margin-top:5px">${tg}</div></div><span class="mut" style="font-size:24px">›</span></div>`}).join("");
 return per+`<div class="card"><h2>Naipes</h2><p class="mut">Toque num naipe para ver o esforço de cada pessoa.</p>${rows||`<p class="mut">Ainda sem efetivos. Adicione-os no separador Efetivos.</p>`}</div>`+expl+sim}
@@ -391,7 +451,7 @@ T(M,y+10,"Banda Sinfónica da Guarda Nacional Republicana",11,1,GREEN);y+=18;
 T(M,y+16,(pdfT||"Resumo de nomeações e esforço")+(fl.n?" — "+nLbl(fl.n):""),17,1,BLK);y+=26;
 T(M,y+9,`Âmbito: ${fl.n?"naipe de "+nLbl(fl.n):"geral (toda a banda)"} · Período: ${per}`,9,0,GREY);y+=13;
 T(M,y+9,`Gerado em ${gen} · ${evs.length} cerimónia(s) · ${d.pp.length} efetivo(s)`,9,0,GREY);y+=17;
-const crit=`Critério de cálculo: cada nomeação vale 1 ponto, mais 1 ponto por cada ${HV()} ${HV()===1?"hora":"horas"} de viagem, contando ida e volta (a viagem de ida é calculada a partir da Calçada da Ajuda). A reserva não conta. Contam as nomeações que constam nas listas, e não a presença efetiva. Partilha igual: ${d.fair.toFixed(1)}% por pessoa${fl.n?" (as percentagens são calculadas só dentro do naipe)":""}. Marca-se "acima" ou "abaixo" quando os pontos de uma pessoa se afastam mais de ${TH()}% da média (folga mínima de 0,5 pontos).`+(d.sv?` ${d.sv} cerimónia(s) sem viagem preenchida contam só 1 ponto.`:"");
+const crit=`Critério de cálculo: cada nomeação vale 1 ponto, mais 1 ponto por cada ${HV()} ${HV()===1?"hora":"horas"} de viagem, contando ida e volta (a viagem de ida é calculada a partir da Calçada da Ajuda). Nos ensaios, cada ${hTx(HE())} h de ensaio valem 1 ponto (sem viagem). A reserva não conta. Contam as nomeações que constam nas listas, e não a presença efetiva. Partilha igual: ${d.fair.toFixed(1)}% por pessoa${fl.n?" (as percentagens são calculadas só dentro do naipe)":""}. Marca-se "acima" ou "abaixo" quando os pontos de uma pessoa se afastam mais de ${TH()}% da média (folga mínima de 0,5 pontos).`+(d.sv?` ${d.sv} cerimónia(s) sem viagem preenchida contam só 1 ponto.`:"");
 wrapT(crit,CW,8.5,0).forEach(l=>{T(M,y+8,l,8.5,0,GREY);y+=11.5});y+=8;
 const sec=(t)=>{T(M,y+11,t,11,1,GREEN);y+=15;L(M,y,M+CW,y,GREEN,.8);y+=6};
 sec("1. Resumo por pessoa");
@@ -460,19 +520,19 @@ vals.forEach((v,i)=>{const h=(H-B-T)*v/mx,w=Math.min(26,bw*.7),x=i*bw+(bw-w)/2,y
 if(v>0){g+=`<path d="M${x},${H-B}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${H-B}Z" fill="var(--ac)"/><text class="vl" x="${x+w/2}" y="${y-3}" text-anchor="middle">${f1(v)}</text>`}
 g+=`<text x="${x+w/2}" y="${H-6}" text-anchor="middle">${labs[i]}</text><rect x="${i*bw}" y="0" width="${bw}" height="${H}" fill="transparent" onclick="tipE('${id}','${tx}')"/>`});
 return g+`</svg><p class="mut" id="${id}">Toque numa barra para ver o valor.</p>`}
-function vEc(){const ys=[...new Set(S.events.map(e=>(e.data||"").slice(0,4)).filter(Boolean))].sort().reverse(),Y=ys.includes(fl.ey)?fl.ey:(ys[0]||String(new Date().getFullYear())),NP=naipes(),nv=NP.includes(fl.en)?fl.en:"";
+function vEc(){const EVS=S.events;const ys=[...new Set(EVS.map(e=>(e.data||"").slice(0,4)).filter(Boolean))].sort().reverse(),Y=ys.includes(fl.ey)?fl.ey:(ys[0]||String(new Date().getFullYear())),NP=naipes(),nv=NP.includes(fl.en)?fl.en:"";
 fl.yy=Y;const sel=`<div class="card"><div class="row">${fld("Ano","",`<select onchange="fl.ey=this.value;draw()">${(ys.length?ys:[Y]).map(y=>`<option ${y===Y?"selected":""}>${y}</option>`).join("")}</select>`)}${fld("Naipe","",`<select onchange="fl.en=this.value;draw()"><option value="">Geral (toda a banda)</option>${NP.map(v=>`<option value="${esc(v)}" ${nv===v?"selected":""}>${esc(nLbl(v))}</option>`).join("")}</select>`)}</div>
 <p class="mut">Contam as nomeações que constam nas listas. Os pontos seguem as regras do separador Equilíbrio (${HV()} h por ponto).</p></div>`;
 if(!S.events.length)return sel+`<div class="card"><p class="mut">Ainda sem cerimónias registadas.</p></div>`;
 const pp=S.people.filter(p=>!nv||(nv==="__none"?!p.inst:nOf(p.inst)===nv)).sort(cmpI),ids=new Set(pp.map(p=>p.id));
 const stat=e=>{const k=e.n.filter(x=>x.s==="Nomeado"&&ids.has(x.p)).length;return{k,pt:k*peso(e)}};
 const mc=Array(12).fill(0),mp=Array(12).fill(0),mn=Array(12).fill(0);
-S.events.filter(e=>(e.data||"").slice(0,4)===Y).forEach(e=>{const m=+e.data.slice(5,7)-1,q=stat(e);if(q.k&&m>=0){mc[m]++;mn[m]+=q.k;mp[m]+=q.pt}});
-const yc=ys.slice().reverse().map(y=>{let c=0,p=0;S.events.filter(e=>(e.data||"").slice(0,4)===y).forEach(e=>{const q=stat(e);if(q.k){c++;p+=q.pt}});return{y,c,p}});
+EVS.filter(e=>(e.data||"").slice(0,4)===Y).forEach(e=>{const m=+e.data.slice(5,7)-1,q=stat(e);if(q.k&&m>=0){mc[m]++;mn[m]+=q.k;mp[m]+=q.pt}});
+const yc=ys.slice().reverse().map(y=>{let c=0,p=0;EVS.filter(e=>(e.data||"").slice(0,4)===y).forEach(e=>{const q=stat(e);if(q.k){c++;p+=q.pt}});return{y,c,p}});
 let h=sel+`<div class="card"><h2>Cerimónias por mês · ${Y}</h2>${bars(mc,MES,"t1","cerimónias")}</div>
 <div class="card"><h2>Esforço por mês · ${Y}</h2><p class="mut" style="margin-top:0">Pontos de esforço somados${nv?" no naipe":" em toda a banda"}.</p>${bars(mp.map(v=>Math.round(v*10)/10),MES,"t2","pontos")}</div>`;
 if(yc.length>1)h+=`<div class="card"><h2>Esforço por ano</h2>${bars(yc.map(q=>Math.round(q.p*10)/10),yc.map(q=>q.y),"t3","pontos")}</div>`;
-if(nv){const grid=pp.map(p=>{const c=Array(12).fill(0);S.events.forEach(e=>{if((e.data||"").slice(0,4)===Y&&e.n.some(x=>x.p===p.id&&x.s==="Nomeado")){const m=+e.data.slice(5,7)-1;if(m>=0)c[m]++}});return{p,c}}),mx=Math.max(1,...grid.flatMap(g=>g.c));
+if(nv){const grid=pp.map(p=>{const c=Array(12).fill(0);EVS.forEach(e=>{if((e.data||"").slice(0,4)===Y&&e.n.some(x=>x.p===p.id&&x.s==="Nomeado")){const m=+e.data.slice(5,7)-1;if(m>=0)c[m]++}});return{p,c}}),mx=Math.max(1,...grid.flatMap(g=>g.c));
 h+=`<div class="card"><h2>Mapa por pessoa · ${Y}</h2><p class="mut" style="margin-top:0">Nomeações por mês. Quanto mais escuro, mais nomeações.</p><div class="hmw"><table class="hmt"><tr><th></th>${MES.map(m=>`<th>${m[0]}</th>`).join("")}</tr>${grid.map(g=>`<tr><td class="nm">${esc(g.p.posto)} ${esc(g.p.nome)}</td>${g.c.map((v,i)=>`<td class="c" title="${MES[i]}: ${v}">${v?`<i style="opacity:${(.25+.75*v/mx).toFixed(2)}"></i><b>${v}</b>`:""}</td>`).join("")}</tr>`).join("")||`<tr><td class="mut">Sem efetivos.</td></tr>`}</table></div></div>`}
 else h+=`<div class="card"><p class="mut">Escolha um naipe para ver o mapa de nomeações por pessoa.</p></div>`;
 const sa=fl.a,sb=fl.b;fl.a=Y+"-01-01";fl.b=Y+"-12-31";let bal="";

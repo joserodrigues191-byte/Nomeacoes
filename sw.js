@@ -1,4 +1,4 @@
-const C="nb-v16",F=["./","index.html","manifest.webmanifest","icon-180.png","icon-512.png","emblema.png","fundo.jpg"];
+const C="nb-v21",F=["./","index.html","manifest.webmanifest","icon-180.png","icon-512.png","emblema.png","fundo.jpg"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(C).then(c=>Promise.all(F.map(u=>fetch(u,{cache:"reload"}).then(r=>c.put(u,r))))).then(()=>self.skipWaiting())));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
 self.addEventListener("fetch",e=>{if(e.request.method!=="GET"||new URL(e.request.url).origin!==location.origin)return;
