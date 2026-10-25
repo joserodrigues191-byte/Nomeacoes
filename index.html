@@ -170,7 +170,7 @@ const DG="this.value=this.value.replace(/\\D/g,'')";
 let edId=null;
 function frm(x,p){return `<div class="g3">${fld("Posto","",`<select id="${x}P">${opts([...POSTOS].reverse(),p.posto)}</select>`)}${fld("Nº Adido","",`<input id="${x}A" inputmode="numeric" value="${esc(p.adido)}" oninput="${DG}">`)}${fld("Nº Ordem","",`<input id="${x}O" inputmode="numeric" maxlength="7" value="${esc(p.ordem)}" oninput="${DG}">`)}</div>
 <div class="row">${fld("Nome","",`<input id="${x}N" value="${esc(p.nome)}">`)}</div>
-<div class="row">${fld("Funções","",`<select id="${x}C"><option value="" ${CATS.includes(p.cat)?"":"selected"}>Instrumentista</option>${CATS.map(c=>`<option ${c===p.cat?"selected":""}>${c}</option>`).join("")}</select>`)}</div>
+<div class="row">${fld("Funções","",`<select id="${x}C"><option value="" ${FUN.includes(p.cat)?"":"selected"}>Instrumentista</option>${FUN.map(c=>`<option ${c===p.cat?"selected":""}>${c}</option>`).join("")}</select>`)}</div>
 <div class="row">${fld("Instrumento","",`<select id="${x}I">${opts(INSTR,p.inst,"Selecionar")}</select>`)}</div>
 <div class="row">${fld("Grupo","",`<select id="${x}G">${[["B","Banda"],["BO","Banda e Orquestra"],["O","Só Orquestra"]].map(([k,l])=>`<option value="${k}" ${(p.g||"B")===k?"selected":""}>${l}</option>`).join("")}</select>`)}</div>`}
 const rk=p=>{const i=POSTOS.indexOf(p.posto);return i<0?-1:i};
@@ -183,7 +183,7 @@ return (fl.nf?`<div class="card"><h2>Adicionar efetivo</h2>${frm("n",{posto:last
 ${naipes(true).map(n=>{const G=L.filter(p=>grp(p)===n);if(!G.length)return"";
 return `<details class="nd" ${(fl.cc&&fl.cc[n])||G.some(p=>p.id===edId)?"open":""} ontoggle="(fl.cc=fl.cc||{})['${esc(n)}']=this.open"><summary><span class="tt">${esc(nLbl(n))}</span> <span class="mut">${G.length}</span></summary>
 ${G.map(p=>p.id===edId?`<div class="pl2">${frm("e",p)}<div class="row"><button class="pri" onclick="saveE()">Guardar</button><button onclick="edId=null;draw()">Cancelar</button></div></div>`
-:`<div class="pl2 pr"><span class="ln">${v(p.posto)}; ${v(p.adido)}; ${v(p.ordem)}; ${v(p.nome)}${p.inst&&p.inst!==n?"; "+v(p.inst):""}${p.g&&p.g!=="B"?` <span class="mut">(${p.g==="O"?"só orquestra":"banda + orquestra"})</span>`:""}</span><div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${p.id}')">⋯</button><div class="menu" id="m_${p.id}" hidden><button onclick="edId='${p.id}';draw()">Editar</button><button class="del" onclick="delP('${p.id}')">Remover</button></div></div></div>`).join("")}</details>`}).join("")||`<p class="mut">Ainda sem efetivos.</p>`}</div>`}
+:`<div class="pl2 pr"><span class="ln">${v(p.posto)}; ${v(p.adido)}; ${v(p.ordem)}; ${v(p.nome)}${p.inst&&p.inst!==n?"; "+v(p.inst):""}${p.cat===GH?` <span class="mut">(Chefia GH)</span>`:""}${p.g&&p.g!=="B"?` <span class="mut">(${p.g==="O"?"só orquestra":"banda + orquestra"})</span>`:""}</span><div class="mw"><button class="dots" aria-label="Opções" onclick="tm(event,'${p.id}')">⋯</button><div class="menu" id="m_${p.id}" hidden><button onclick="edId='${p.id}';draw()">Editar</button><button class="del" onclick="delP('${p.id}')">Remover</button></div></div></div>`).join("")}</details>`}).join("")||`<p class="mut">Ainda sem efetivos.</p>`}</div>`}
 function cm(){document.querySelectorAll(".menu").forEach(m=>m.hidden=true)}
 function tm(e,id){e.stopPropagation();const m=document.getElementById("m_"+id),was=!m.hidden;cm();m.hidden=was}
 document.addEventListener("click",cm);
@@ -209,7 +209,7 @@ function delP(id){if(!confirm("Remover este efetivo e os seus registos?"))return
 let vw=null;
 const fd=d=>d?d.split("-").reverse().join("/"):"";
 const EV=id=>S.events.find(x=>x.id===id);
-const iR=p=>{if(CATS.includes(p.cat))return CATS.indexOf(p.cat)-10;const i=INSTR.indexOf(p.inst);return i<0?99:i};
+const iR=p=>{if(FUN.includes(p.cat))return FUN.indexOf(p.cat)-10;const i=INSTR.indexOf(p.inst);return i<0?99:i};
 function cmpI(a,b){return iR(a)-iR(b)||cmpH(a,b)}
 let cl=false;
 const hoje=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
@@ -266,7 +266,7 @@ const thumbs=(e,rm)=>(e.fotos||[]).map(f=>`<span class="th"><img data-f="${f.id}
 function stl(s){return s==="Nomeado"?["n","Nomeado"]:s==="Reserva"?["r","Reserva"]:["","—"]}
 function cnt(e){const n=e.n.filter(x=>x.s==="Nomeado").length,r=e.n.filter(x=>x.s==="Reserva").length;return `${n} nomeados · ${r} em reserva`}
 let bmC={};
-function nsum(e,n){const ids=new Set(S.people.filter(p=>grp(p)===n&&inG(p,e)).map(p=>p.id)),a=e.n.filter(x=>x.s==="Nomeado"&&ids.has(x.p)).length,r=e.n.filter(x=>x.s==="Reserva"&&ids.has(x.p)).length;return `${ids.size} efetivo(s)`+(a?` · ${a} nomeado(s)`:"")+(r?` · ${r} reserva`:"")}
+function nsum(e,n){const ids=new Set(S.people.filter(p=>mg(p)===n&&inG(p,e)).map(p=>p.id)),a=e.n.filter(x=>x.s==="Nomeado"&&ids.has(x.p)).length,r=e.n.filter(x=>x.s==="Reserva"&&ids.has(x.p)).length;return `${ids.size} efetivo(s)`+(a?` · ${a} nomeado(s)`:"")+(r?` · ${r} reserva`:"")}
 function updSum(e){document.querySelectorAll(".ns").forEach(el=>el.textContent=nsum(e,el.dataset.n))}
 function balMap(ex){const sa=fl.a,sb=fl.b,m={};fl.a="";fl.b="";try{naipes().forEach(v=>{const d=calcEq(v,{ex});d.r.forEach(x=>{m[x.p.id]={pt:x.pt,st:stT(x,d.avg)}})})}finally{fl.a=sa;fl.b=sb}return m}
 function avHtml(e){const L=e.n.filter(x=>x.s==="Nomeado").map(x=>P(x.p)).filter(p=>p&&bmC[p.id]&&bmC[p.id].st==="acima");
@@ -317,8 +317,9 @@ return `<div class="g3" style="grid-template-columns:1fr 1fr">${fld("Primeiro di
 <p class="mut" id="ens-sum" style="margin-top:8px"></p>`}
 function fEv(){const e=EV(edit);if(!e){edit=null;return vEv()}bmC=balMap(e.id);
 const st=id=>(e.n.find(x=>x.p===id)||{}).s||"";let last=null;
-const pk=p=>{const[c,l]=stl(st(p.id)),bm=bmC[p.id];return `<div class="pk ${c}" id="r_${p.id}" onclick="cyc('${p.id}')"><span class="ln">${esc(p.posto||"–")} · ${esc(p.adido||"–")} · ${esc(p.nome)}${p.inst&&nOf(p.inst)!==p.inst?` <span class="mut">(${esc(p.inst)})</span>`:""}${bm&&bm.st&&bm.st!=="na média"?` <span class="tag ${bm.st==="acima"?"hi":"lo"}">${bm.st}</span>`:""}</span><span class="bd" id="b_${p.id}">${l}</span></div>`};
-const rows=naipes(true).filter(n=>n==="Chefia"||!CATS.includes(n)).map(n=>{const G=S.people.filter(p=>grp(p)===n&&inG(p,e)).sort(cmpH);if(!G.length)return"";
+const pk=p=>{const[c,l]=stl(st(p.id)),bm=bmC[p.id];return `<div class="pk ${c}" id="r_${p.id}" onclick="cyc('${p.id}')"><span class="ln">${esc(p.posto||"–")} · ${esc(p.adido||"–")} · ${esc(p.nome)}${p.cat===GH?` <span class="mut">(${esc(p.inst||"sem instrumento")})</span>`:p.inst&&nOf(p.inst)!==p.inst?` <span class="mut">(${esc(p.inst)})</span>`:""}${bm&&bm.st&&bm.st!=="na média"?` <span class="tag ${bm.st==="acima"?"hi":"lo"}">${bm.st}</span>`:""}</span><span class="bd" id="b_${p.id}">${l}</span></div>`};
+const nl=naipes(true).filter(n=>n==="Chefia"||!CATS.includes(n));if(S.people.some(p=>p.cat===GH))nl.splice(nl.includes("Chefia")?1:0,0,GH);
+const rows=nl.map(n=>{const G=S.people.filter(p=>mg(p)===n&&inG(p,e)).sort(cmpH);if(!G.length)return"";
 return `<details class="nd" ${fl.mo&&fl.mo[n]?"open":""} ontoggle="(fl.mo=fl.mo||{})['${esc(n)}']=this.open"><summary><span class="tt">${esc(n==="Chefia"?"Maestro":nLbl(n))}</span> <span class="mut ns" data-n="${esc(n)}">${nsum(e,n)}</span></summary>${G.map(pk).join("")}</details>`}).join("");
 return `<div class="card"><h2>${e.montada?"Editar serviço":"Novo serviço"}</h2><div class="row">${fld("Nome do serviço","",`<input value="${esc(e.nome)}" placeholder="Ex.: Cartaxo – CTER Santarém" onchange="up('nome',this.value)">`)}</div>
 ${e.ens?ensF(e):`<div class="g3" style="grid-template-columns:1fr 1fr">
@@ -371,8 +372,8 @@ function tgl(){const l=$("#lista"),h=l.hidden;l.hidden=!h;$("#eye").setAttribute
 const EYE='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 function vBanda(){const e=EV(vw);if(!e){vw=null;return vEv()}
 const get=s=>e.n.filter(x=>x.s===s).map(x=>P(x.p)).filter(Boolean).sort(cmpI);
-const N=get("Nomeado"),R=get("Reserva"),ln=p=>`${esc(p.posto||"–")}; ${esc(p.adido||"–")}; ${esc(p.ordem||"–")}; ${esc(p.nome)}`;
-let last=null;const body=N.map(p=>{const h=CATS.includes(p.cat)?p.cat:(p.inst||"Sem instrumento"),t=h!==last?`<div class="ih">${esc(h)}</div>`:"";last=h;return t+`<div class="pl2">${ln(p)}</div>`}).join("");
+const N=get("Nomeado"),R=get("Reserva"),ln=p=>`${esc(p.posto||"–")}; ${esc(p.adido||"–")}; ${esc(p.ordem||"–")}; ${esc(p.nome)}${p.cat===GH&&p.inst?"; "+esc(p.inst):""}`;
+let last=null;const body=N.map(p=>{const h=FUN.includes(p.cat)?p.cat:(p.inst||"Sem instrumento"),t=h!==last?`<div class="ih">${esc(h)}</div>`:"";last=h;return t+`<div class="pl2">${ln(p)}</div>`}).join("");
 const kv=(k,v)=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`;
 return `<div class="card"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><h2 style="flex:1;margin:0">${esc(e.nome||"Banda nomeada")}</h2>
 <button id="eye" class="dots" style="flex:0 0 auto;min-width:0;padding:6px 10px" aria-label="Ver nomeações" aria-pressed="false" title="Ver nomeações" onclick="tgl()">${EYE}</button></div>
@@ -392,7 +393,8 @@ function setP(v){const p=parseFloat(String(v).replace(",","."));if(!(p>0&&p<=100
 function applySim(){const h=fl.sh>0?fl.sh:HV(),p=fl.sp>0&&fl.sp<=100?fl.sp:TH();if(!confirm("Aplicar "+h+" hora(s) por ponto e limite de alertas de "+p+"%? Isto recalcula todo o histórico e os PDFs seguintes."))return;S.cfg=S.cfg||{};S.cfg.h=h;S.cfg.p=p;fl.sh=0;fl.sp=0;save();draw()}
 function setH(v){const h=parseFloat(String(v).replace(",","."));if(!(h>0)){alert("Indique um número de horas maior que zero.");return draw()}S.cfg=S.cfg||{};S.cfg.h=h;save();draw()}
 const nOf=i=>i==="Requinta"?"Clarinete":(i||"");
-const CATS=["Chefia","Subchefia","Secretaria","Arquivo"];
+const CATS=["Chefia","Subchefia","Secretaria","Arquivo"],GH="Chefia GH",FUN=[...CATS,GH];
+const mg=p=>p.cat===GH?GH:grp(p);
 const grp=p=>CATS.includes(p.cat)?p.cat:(nOf(p.inst)||"__none");
 function naipes(all){const st=new Set(S.people.filter(p=>all||!CATS.includes(p.cat)).map(grp)),a=(all?CATS.filter(i=>st.has(i)):[]).concat(INSTR.filter(i=>st.has(i)));st.forEach(i=>{if(i!=="__none"&&!INSTR.includes(i)&&!CATS.includes(i))a.push(i)});if(st.has("__none"))a.push("__none");return a}
 const nLbl=v=>v==="__none"?"Sem instrumento":v;
@@ -497,10 +499,10 @@ const x=M+c*(cw+gap);
 if(it.h){T(x,yy+lh-3,it.h,8.5,1,GREEN,cw);L(x,yy+lh,x+cw,yy+lh,[.75,.8,.78],.4)}else T(x,yy+lh-2.5,it.t,8,0,BLK,cw);
 yy+=lh;mx=Math.max(mx,yy)}
 y=mx+6};
-const ln=p=>`${p.posto||"–"}; ${p.adido||"–"}; ${p.ordem||"–"}; ${p.nome}`;
+const ln=p=>`${p.posto||"–"}; ${p.adido||"–"}; ${p.ordem||"–"}; ${p.nome}${p.cat===GH&&p.inst?"; "+p.inst:""}`;
 evs.forEach((e,i)=>{
 const get=s=>e.n.filter(x=>x.s===s).map(x=>P(x.p)).filter(p=>p&&d.pp.includes(p)).sort(cmpI);
-const NN=get("Nomeado"),RS=get("Reserva"),items=[];let last=null;NN.forEach(p=>{const h=CATS.includes(p.cat)?p.cat:(p.inst||"Sem instrumento");if(h!==last){items.push({h});last=h}items.push({t:ln(p)})});
+const NN=get("Nomeado"),RS=get("Reserva"),items=[];let last=null;NN.forEach(p=>{const h=FUN.includes(p.cat)?p.cat:(p.inst||"Sem instrumento");if(h!==last){items.push({h});last=h}items.push({t:ln(p)})});
 if(RS.length){items.push({h:"Reserva"});RS.forEach(p=>items.push({t:`${ln(p)} (${p.inst||"–"})`}))}
 if(!items.length)items.push({t:fl.n?"Sem nomeados neste naipe.":"Sem nomeados."});
 const nl=e.notas?wrapT("Nota: "+e.notas.replace(/\s+/g," "),CW-10,8.5,0):[];
