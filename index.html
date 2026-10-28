@@ -156,7 +156,7 @@ ${vBin()}${(S.log||[]).length?`<div class="cm lgd"><details><summary><b>Registo 
 function bin(k,d,refs){const id=uid();(S.bin=S.bin||[]).push({id,t:new Date().toISOString(),k,d,refs:refs||[]});return id}
 function binDel(id,q){const b=(S.bin||[]).find(x=>x.id===id);if(!b)return;if(!q&&!confirm("Apagar definitivamente? Não poderá ser recuperado."))return;if(b.k==="e")(b.d.fotos||[]).forEach(f=>{fDel(f.id);delete urls[f.id]});S.bin=S.bin.filter(x=>x.id!==id);save();if(!q)draw()}
 function binRest(id){const b=(S.bin||[]).find(x=>x.id===id);if(!b)return;
-if(b.k==="e")S.events.push(b.d);else{if(b.d.ordem&&S.people.some(q=>q.ordem===b.d.ordem))return alert("Já existe outro efetivo com este Nº Ordem. Não é possível restaurar.");S.people.push(b.d);b.refs.forEach(r=>{const e=EV(r.e);if(e&&!e.n.some(x=>x.p===b.d.id))e.n.push({p:b.d.id,s:r.s})})}
+if(b.k==="e")S.events.push(b.d);else{if(b.d.ordem&&S.people.some(q=>q.ordem===b.d.ordem))return alert("Já existe outro efetivo com este Nº Matrícula. Não é possível restaurar.");S.people.push(b.d);b.refs.forEach(r=>{const e=EV(r.e);if(e&&!e.n.some(x=>x.p===b.d.id))e.n.push({p:b.d.id,s:r.s})})}
 S.bin=S.bin.filter(x=>x.id!==id);(S.log=S.log||[]).push({t:new Date().toISOString(),a:"Restaurado: "+(b.k==="e"?(b.d.nome||b.d.local||"serviço"):b.d.posto+" "+b.d.nome)});save();draw()}
 function purgeBin(){const lim=Date.now()-30*864e5;(S.bin||[]).filter(b=>new Date(b.t)<lim).forEach(b=>binDel(b.id,true))}
 let tmr=null;
@@ -174,7 +174,7 @@ function optP(sel){const k=GRP_P.flatMap(g=>g[1]);return (sel&&!k.includes(sel)?
 const fld=(l,c,h)=>`<label class="f ${c}"><span>${l}</span>${h}</label>`;
 const DG="this.value=this.value.replace(/\\D/g,'')";
 let edId=null;
-function frm(x,p){return `<div class="g3">${fld("Posto","",`<select id="${x}P">${optP(p.posto)}</select>`)}${fld("Nº Adido","",`<input id="${x}A" inputmode="numeric" value="${esc(p.adido)}" oninput="${DG}">`)}${fld("Nº Ordem","",`<input id="${x}O" inputmode="numeric" maxlength="7" value="${esc(p.ordem)}" oninput="${DG}">`)}</div>
+function frm(x,p){return `<div class="g3">${fld("Posto","",`<select id="${x}P">${optP(p.posto)}</select>`)}${fld("Nº Ordem","",`<input id="${x}A" inputmode="numeric" value="${esc(p.adido)}" oninput="${DG}">`)}${fld("Nº Matrícula","",`<input id="${x}O" inputmode="numeric" maxlength="7" value="${esc(p.ordem)}" oninput="${DG}">`)}</div>
 <div class="row">${fld("Nome","",`<input id="${x}N" value="${esc(p.nome)}">`)}</div>
 <div class="row">${fld("Funções","",`<select id="${x}C" onchange="['IR','GR'].forEach(k=>document.getElementById('${x}'+k).hidden=CATS.includes(this.value))"><option value="" ${FUN.includes(p.cat)?"":"selected"}>Instrumentista</option>${FUN.map(c=>`<option ${c===p.cat?"selected":""}>${c}</option>`).join("")}</select>`)}</div>
 <div class="row" id="${x}IR" ${CATS.includes(p.cat)?"hidden":""}>${fld("Instrumento","",`<select id="${x}I">${opts(INSTR,p.inst,"Selecionar")}</select>`)}</div>
@@ -198,19 +198,19 @@ function cm(){document.querySelectorAll(".menu").forEach(m=>m.hidden=true)}
 function tm(e,id){e.stopPropagation();const m=document.getElementById("m_"+id),was=!m.hidden;cm();m.hidden=was}
 document.addEventListener("click",cm);
 function saveE(){const p=P(edId);if(!p)return;const o=$("#eO").value.trim(),n=$("#eN").value.trim();
-if(!/^\d{7}$/.test(o))return alert("O Nº Ordem tem de ter exatamente 7 algarismos.");
+if(!/^\d{7}$/.test(o))return alert("O Nº Matrícula tem de ter exatamente 7 algarismos.");
 if(!n)return alert("Escreva o nome.");
-if(S.people.some(q=>q.id!==p.id&&q.ordem===o))return alert("Já existe outro efetivo com este Nº Ordem.");
+if(S.people.some(q=>q.id!==p.id&&q.ordem===o))return alert("Já existe outro efetivo com este Nº Matrícula.");
 p.posto=$("#eP").value;p.adido=$("#eA").value.trim();p.ordem=o;p.nome=n;p.cat=$("#eC").value;p.inst=CATS.includes(p.cat)?"":$("#eI").value;p.g=CATS.includes(p.cat)?"BO":$("#eG").value;edId=null;save();draw()}
 function addP(){const n=$("#nN").value.trim(),o=$("#nO").value.trim(),a=$("#nA").value.trim(),po=$("#nP").value,ct=$("#nC").value,i=CATS.includes(ct)?"":$("#nI").value;
-if(!/^\d{7}$/.test(o))return alert("O Nº Ordem tem de ter exatamente 7 algarismos.");
+if(!/^\d{7}$/.test(o))return alert("O Nº Matrícula tem de ter exatamente 7 algarismos.");
 if(!n)return alert("Escreva o nome.");
-if(S.people.some(q=>q.ordem===o))return alert("Já existe um efetivo com este Nº Ordem.");
+if(S.people.some(q=>q.ordem===o))return alert("Já existe um efetivo com este Nº Matrícula.");
 S.people.push({id:uid(),posto:po,adido:a,ordem:o,nome:n,inst:i,cat:ct,g:CATS.includes(ct)?"BO":$("#nG").value});lastAdd={posto:po,inst:i,g:$("#nG").value};(fl.cc=fl.cc||{})[grp({inst:i,cat:ct})]=true;save();draw()}
 function edP(id,k,v){const p=P(id);if(!p)return;
 if(k==="ordem"){v=v.replace(/\D/g,"");
-if(!/^\d{7}$/.test(v)){alert("O Nº Ordem tem de ter exatamente 7 algarismos.");return draw()}
-if(S.people.some(q=>q.id!==id&&q.ordem===v)){alert("Já existe outro efetivo com este Nº Ordem.");return draw()}p.ordem=v}
+if(!/^\d{7}$/.test(v)){alert("O Nº Matrícula tem de ter exatamente 7 algarismos.");return draw()}
+if(S.people.some(q=>q.id!==id&&q.ordem===v)){alert("Já existe outro efetivo com este Nº Matrícula.");return draw()}p.ordem=v}
 else if(k==="nome"){if(!v.trim()){alert("O nome não pode ficar vazio.");return draw()}p.nome=v.trim()}
 else if(k==="adido")p.adido=v.replace(/\D/g,"");
 else p[k]=v;save()}
@@ -486,7 +486,7 @@ np();
 if(pdfP){const pp0=P(pdfP),x0=d.r.find(q=>q.p.id===pdfP)||{p:pp0,f:0,rs:0,vg:0,pt:0},pos=Math.max(1,d.r.findIndex(q=>q.p.id===pdfP)+1),st0=stT(x0,d.avg);
 T(M,y+10,"Banda Sinfónica da Guarda Nacional Republicana",11,1,GREEN);y+=18;
 T(M,y+16,"Relatório individual de nomeações e esforço",17,1,BLK);y+=26;
-T(M,y+11,`${pp0.posto||"–"} · Nº Adido ${pp0.adido||"–"} · Nº Ordem ${pp0.ordem||"–"} · ${pp0.nome}`,11,1,BLK,CW);y+=15;
+T(M,y+11,`${pp0.posto||"–"} · Nº Ordem ${pp0.adido||"–"} · Nº Matrícula ${pp0.ordem||"–"} · ${pp0.nome}`,11,1,BLK,CW);y+=15;
 T(M,y+9,`${pp0.inst||nLbl(grp(pp0))}${pp0.cat===GH?" · Chefia GH":""} · Período: ${per}`,9,0,GREY,CW);y+=13;
 T(M,y+9,`Gerado em ${gen} · naipe: ${nLbl(fl.n||grp(pp0))}`,9,0,GREY);y+=17;
 {const bx=[["Nomeações",String(x0.f)],["Reservas",String(x0.rs)],["Viagem total",x0.vg?fmtV(x0.vg):"–"],["Pontos de esforço",x0.pt.toFixed(2).replace(".",",")],["% do esforço do naipe",(d.tot?(x0.pt/d.tot*100).toFixed(1):"0.0")+"%"],["Média do naipe",d.avg.toFixed(2).replace(".",",")+" pts"],["Posição no naipe",pos+"º de "+d.r.length]],g=8,bw=(CW-g*(bx.length-1))/bx.length;
@@ -515,7 +515,7 @@ const crit=`Critério de cálculo: nas cerimónias e nos concertos, cada nomeaç
 wrapT(crit,CW,8.5,0).forEach(l=>{T(M,y+8,l,8.5,0,GREY);y+=11.5});y+=8;
 const sec=(t)=>{T(M,y+11,t,11,1,GREEN);y+=15;L(M,y,M+CW,y,GREEN,.8);y+=6};
 sec("1. Resumo por pessoa");
-const cols=[{h:"Posto",w:46},{h:"Nº Adido",w:52},{h:"Nº Ordem",w:62},{h:"Nome",w:232},{h:"Instrumento",w:92},{h:"Nomeações",w:66,r:1},{h:"Esforço",w:54,r:1},{h:"Viagem",w:70,r:1},{h:"Reserva",w:46,r:1},{h:"Estado",w:50}];
+const cols=[{h:"Posto",w:46},{h:"Nº Ordem",w:52},{h:"Nº Matrícula",w:72},{h:"Nome",w:222},{h:"Instrumento",w:92},{h:"Nomeações",w:66,r:1},{h:"Esforço",w:54,r:1},{h:"Viagem",w:70,r:1},{h:"Reserva",w:46,r:1},{h:"Estado",w:50}];
 const head=()=>{R(M,y,CW,16,GREEN);let x=M;cols.forEach(c=>{if(c.r)TR(x+c.w-4,y+11.5,c.h,8.5,1,WHT);else T(x+4,y+11.5,c.h,8.5,1,WHT,c.w-6);x+=c.w});y+=16};
 head();
 d.r.forEach((q,i)=>{if(y+14>BOT){np();head()}
