@@ -95,6 +95,7 @@ main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 #nsv .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--bd);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px}
 #nsv .op{min-height:54px;font-size:17px;font-weight:600;border-radius:14px;text-align:left;padding:0 16px}#nsv .cn{min-height:48px;border:0;background:transparent;color:var(--mut);font-size:16px}
 .chk{display:flex;align-items:center;gap:10px;min-height:44px}.chk input{width:22px;height:22px;padding:0}
+.ecal-h{display:flex;justify-content:space-between;align-items:center;margin:8px 0}.nvb{min-width:44px;min-height:40px;font-size:20px;padding:0 10px}.ecal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.ecal .w{text-align:center;font-size:11px;color:var(--mut)}.ed{min-height:42px;padding:0;border-radius:10px;font-size:15px}.ed.wk{color:var(--mut)}.ed.on{background:var(--ac);color:#fff;font-weight:700;border-color:var(--ac)}
 .dcs{display:flex;flex-wrap:wrap;gap:6px}.dc{min-width:46px;min-height:50px;padding:4px 6px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:16px;font-weight:700;line-height:1.15;background:transparent;color:var(--mut)}.dc small{font-size:10px;font-weight:400;text-transform:uppercase}.dc.on{background:var(--ac);color:#04271d;border-color:var(--ac)}
 .ex{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--mut)}.ex b{color:var(--fg)}
 .ex2{padding:10px 0;border-top:1px solid var(--bd)}.ex2 h3{margin:0 0 4px;font-size:15px;color:var(--ok)}.ex2 p{margin:0 0 4px;font-size:14px}.ex2 p.mut{font-size:13px}
@@ -228,7 +229,7 @@ const hoje=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth(
 const DSM=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"],MSS=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
 const dif=d=>Math.round((new Date(d+"T00:00:00")-new Date(hoje()+"T00:00:00"))/864e5);
 const quando=d=>{const n=dif(d);return n===0?"hoje":n===1?"amanhã":"daqui a "+n+" dias"};
-function dtxt(f,d){if(f.ens&&f.ens.b&&f.ens.b!==f.data){const b=new Date(f.ens.b+"T12:00:00");return d.getMonth()===b.getMonth()?`${d.getDate()} a ${b.getDate()} de ${MSS[b.getMonth()]}`:`${d.getDate()} de ${MSS[d.getMonth()]} a ${b.getDate()} de ${MSS[b.getMonth()]}`}return `${DSM[d.getDay()]}, ${d.getDate()} de ${MSS[d.getMonth()]}`}
+function dtxt(f,d){if(f.ens&&f.ens.b&&f.ens.b!==f.data){const b=new Date(f.ens.b+"T12:00:00"),nd=f.ens.dias.length,sp=nd!==rangeD(f.data,f.ens.b).length?` (${nd} dias)`:"";return (d.getMonth()===b.getMonth()?`${d.getDate()} a ${b.getDate()} de ${MSS[b.getMonth()]}`:`${d.getDate()} de ${MSS[d.getMonth()]} a ${b.getDate()} de ${MSS[b.getMonth()]}`)+sp}return `${DSM[d.getDay()]}, ${d.getDate()} de ${MSS[d.getMonth()]}`}
 const nNom=e=>e.n.filter(x=>x.s==="Nomeado").length;
 function openE(id){const e=EV(id);if(e&&e.montada)vw=id;else edit=id;draw();window.scrollTo(0,0)}
 function vEv(){if(edit)return fEv();if(vw)return vBanda();return cl?vEvAll():vEvHome()}
@@ -255,7 +256,7 @@ function evL(){const L=S.events.filter(evM);const ML=["Janeiro","Fevereiro","Mar
 const TIPOS=["Cerimónia","Concerto","Ensaio"];
 function novoServ(){let o=$("#nsv");if(!o){o=document.createElement("div");o.id="nsv";document.body.appendChild(o)}
 o.innerHTML=`<div class="bg" onclick="$('#nsv').hidden=true"></div><div class="sheet" role="dialog" aria-label="Novo serviço"><div class="tt" style="font-size:18px;margin-bottom:10px">Novo serviço</div>${TIPOS.map(t=>`<button class="op" onclick="$('#nsv').hidden=true;newEv('${t}')">${t}</button>`).join("")}<button class="cn" onclick="$('#nsv').hidden=true">Cancelar</button></div>`;o.hidden=false}
-function newEv(t){const e={id:uid(),data:new Date().toISOString().slice(0,10),nome:"",local:"",tipo:TIPOS.includes(t)?t:"Cerimónia",viag:null,n:[],montada:false};if(t==="Concerto"||t==="Ensaio")e.grupo="Banda";if(t==="Ensaio"){const x=new Date(),w=x.getDay();if(w===6)x.setDate(x.getDate()+2);else if(w===0)x.setDate(x.getDate()+1);e.data=isoD(x);e.ens={a:e.data,b:e.data,fim:false,h:2,dias:[]};genDias(e);e.local="Banda"}S.events.push(e);edit=e.id;vw=null;save();draw()}
+function newEv(t){const e={id:uid(),data:new Date().toISOString().slice(0,10),nome:"",local:"",tipo:TIPOS.includes(t)?t:"Cerimónia",viag:null,n:[],montada:false};if(t==="Concerto"||t==="Ensaio")e.grupo="Banda";if(t==="Ensaio"){const x=new Date(),w=x.getDay();if(w===6)x.setDate(x.getDate()+2);else if(w===0)x.setDate(x.getDate()+1);e.data=isoD(x);e.ens={a:e.data,b:e.data,h:2,dias:[e.data]};e.local="Banda"}S.events.push(e);edit=e.id;vw=null;save();draw()}
 function delE(id){if(!confirm("Apagar este serviço?"))return;const e=EV(id);const bid=e?bin("e",e):null;(S.log=S.log||[]).push({t:new Date().toISOString(),a:`Serviço apagado: ${e?fd(e.data)+" · "+(e.nome||e.local||"Sem nome")+" ("+e.n.filter(x=>x.s==="Nomeado").length+" nomeados)":id}`});S.events=S.events.filter(e=>e.id!==id);save();draw();if(bid)toast("Serviço apagado",()=>binRest(bid))}
 
 /* Fotos das listas (IndexedDB, só neste dispositivo) */
@@ -310,22 +311,27 @@ function genDias(e){const n=e.ens;n.dias=rangeD(n.a,n.b).filter(x=>n.fim||![0,6]
 const hTx=h=>String(Math.round(h*10)/10).replace(".",",");
 const ensTxt=e=>{const n=e.ens.dias.length;return `${n} ${n===1?"ensaio":"ensaios"} de ${hTx(e.ens.h)} h`};
 function setTipo(v){const e=EV(edit);if(!e)return;up("tipo",v);if((v==="Ensaio"||v==="Concerto")&&!e.grupo)e.grupo="Banda";if(v==="Cerimónia")delete e.grupo;if(v!=="Ensaio")delete e.conc;
-if(v==="Ensaio"&&!e.ens){e.ens={a:e.data,b:e.data,fim:false,h:2,dias:[]};genDias(e);e.local=e.grupo||"Banda";e.viag=null;e.viagInfo=""}
+if(v==="Ensaio"&&!e.ens){e.ens={a:e.data,b:e.data,h:2,dias:[e.data]};e.local=e.grupo||"Banda";e.viag=null;e.viagInfo=""}
 else if(v!=="Ensaio"&&e.ens){e.ens=null;if(e.local==="Banda"||e.local==="Orquestra")e.local=""}
 save();draw()}
 function ensUp(k,v){const e=EV(edit);if(!e||!e.ens)return;const n=e.ens;
-if(k==="h"){const h=parseFloat(String(v).replace(",","."));if(!(h>0)){alert("Indique a duração em horas.");return draw()}n.h=h;save();ensSum(e);return}
-if(k==="fim")n.fim=!!v;else n[k]=v;
-if(!n.a)n.a=e.data;if(!n.b||n.b<n.a)n.b=n.a;e.data=n.a;genDias(e);save();draw()}
-function ensTg(d,btn){const e=EV(edit);if(!e||!e.ens)return;const n=e.ens,i=n.dias.indexOf(d);if(i<0){n.dias.push(d);n.dias.sort()}else n.dias.splice(i,1);btn.classList.toggle("on",i<0);save();ensSum(e)}
-function ensSum(e){const el=$("#ens-sum");if(el)el.innerHTML=`<b>${ensTxt(e)}</b> · ${hTx(e.ens.dias.length*e.ens.h)} h no total · na ${e.grupo||"Banda"}, sem deslocação`}
-function ensF(e){const n=e.ens,days=rangeD(n.a,n.b),DS=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
-return `<div class="g3" style="grid-template-columns:1fr 1fr">${fld("Primeiro dia","",`<input type="date" value="${n.a}" onchange="ensUp('a',this.value)">`)}${fld("Último dia","",`<input type="date" value="${n.b}" onchange="ensUp('b',this.value)">`)}</div>
-<div class="g3" style="grid-template-columns:1fr 1fr">${fld("Duração de cada ensaio (h)","",`<input type="number" step="0.5" min="0.5" inputmode="decimal" value="${n.h}" onchange="ensUp('h',this.value)">`)}${tipoSel(e)}</div>
+if(k==="h"){const h=parseFloat(String(v).replace(",","."));if(!(h>0)){alert("Indique a duração em horas.");return draw()}n.h=h;save();ensSum(e);return}}
+function ensSync(e){const n=e.ens;n.dias=[...new Set(n.dias)].sort();if(n.dias.length){n.a=n.dias[0];n.b=n.dias[n.dias.length-1];e.data=n.a}}
+function ensTg(d,btn){const e=EV(edit);if(!e||!e.ens)return;const n=e.ens,i=n.dias.indexOf(d);if(i<0)n.dias.push(d);else n.dias.splice(i,1);ensSync(e);btn.classList.toggle("on",i<0);save();ensSum(e)}
+function ensMes(k){fl.em=addM(fl.em,k);draw()}
+function addM(ym,k){const[y,m]=ym.split("-").map(Number),d=new Date(y,m-1+k,1);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")}
+function ensSum(e){const el=$("#ens-sum");if(!el)return;const n=e.ens,L=n.dias.map(d=>d.slice(8)+"/"+d.slice(5,7));
+el.innerHTML=n.dias.length?`<b>${ensTxt(e)}</b> · ${hTx(n.dias.length*n.h)} h no total · na ${e.grupo||"Banda"}, sem deslocação<br><span class="mut">Dias: ${L.join(", ")}</span>`:`<span class="mut">Toque nos dias do calendário para marcar os ensaios.</span>`}
+function ensF(e){const n=e.ens,MN=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+if(fl.emId!==e.id||!/^\d{4}-\d{2}$/.test(fl.em||"")){fl.emId=e.id;fl.em=(n.dias[0]||e.data||isoD(new Date())).slice(0,7)}
+const[y,m]=fl.em.split("-").map(Number),first=(new Date(y,m-1,1).getDay()+6)%7,nd=new Date(y,m,0).getDate(),cells=[];
+for(let i=0;i<first;i++)cells.push('<span></span>');
+for(let d=1;d<=nd;d++){const iso=fl.em+"-"+String(d).padStart(2,"0"),w=new Date(y,m-1,d).getDay();cells.push(`<button class="ed ${n.dias.includes(iso)?"on":""} ${w===0||w===6?"wk":""}" onclick="ensTg('${iso}',this)">${d}</button>`)}
+return `<div class="g3" style="grid-template-columns:1fr 1fr">${fld("Duração de cada ensaio (h)","",`<input type="number" step="0.5" min="0.5" inputmode="decimal" value="${n.h}" onchange="ensUp('h',this.value)">`)}${tipoSel(e)}</div>
 <div class="g3" style="grid-template-columns:1fr 1fr">${grupoSel(e)}${concSel(e)}</div>
-<label class="chk"><input type="checkbox" ${n.fim?"checked":""} onchange="ensUp('fim',this.checked)"> Incluir sábados e domingos</label>
-<p class="mut" style="margin:6px 0">Local: ${e.grupo||"Banda"} (sem deslocação). Toque nos dias para marcar ou desmarcar ensaios (feriados, folgas).</p>
-<div class="dcs">${days.map(d=>{const x=new Date(d+"T12:00:00");return `<button class="dc ${n.dias.includes(d)?"on":""}" onclick="ensTg('${d}',this)"><small>${DS[x.getDay()]}</small>${x.getDate()}</button>`}).join("")||`<span class="mut">Indique os dias.</span>`}</div>
+<p class="mut" style="margin:6px 0">Local: ${e.grupo||"Banda"} (sem deslocação). Toque nos dias para marcar ou desmarcar ensaios. Pode escolher dias soltos e mudar de mês.</p>
+<div class="ecal-h"><button class="nvb" aria-label="Mês anterior" onclick="ensMes(-1)">‹</button><b>${MN[m-1]} ${y}</b><button class="nvb" aria-label="Mês seguinte" onclick="ensMes(1)">›</button></div>
+<div class="ecal">${["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"].map(x=>`<span class="w">${x}</span>`).join("")}${cells.join("")}</div>
 <p class="mut" id="ens-sum" style="margin-top:8px"></p>`}
 function sgn(bm,e){if(!bm||!bm.avg)return"";const t=Math.max(.5,bm.avg*TH()/100),w=peso(e);
 if(bm.pt<bm.avg-t)return`<span class="sgn up" title="Abaixo da média do naipe">▲</span>`;
@@ -482,7 +488,7 @@ const R=(x,yt,w,h,c)=>ops.push(`${c3(c)} rg ${x.toFixed(2)} ${(H-yt-h).toFixed(2
 const L=(x1,y1,x2,y2,c,wd)=>ops.push(`${c3(c)} RG ${wd} w ${x1.toFixed(2)} ${(H-y1).toFixed(2)} m ${x2.toFixed(2)} ${(H-y2).toFixed(2)} l S`);
 const now=new Date(),p2=n=>String(n).padStart(2,"0"),gen=`${p2(now.getDate())}/${p2(now.getMonth()+1)}/${now.getFullYear()} às ${p2(now.getHours())}:${p2(now.getMinutes())}`;
 const evs=[...d.ev].sort((a,b)=>String(a.data).localeCompare(String(b.data)));
-const ds=evs.map(e=>e.data).filter(Boolean).sort();
+const ds=evs.flatMap(e=>[e.data,fim(e)]).filter(Boolean).sort();
 const per=(fl.a||fl.b)?(fl.a&&fl.b?`de ${fd(fl.a)} a ${fd(fl.b)}`:fl.a?`desde ${fd(fl.a)}`:`até ${fd(fl.b)}`):`todos os serviços registados${ds.length?` (de ${fd(ds[0])} a ${fd(ds[ds.length-1])})`:""}`;
 np();
 if(pdfP){const pp0=P(pdfP),x0=d.r.find(q=>q.p.id===pdfP)||{p:pp0,f:0,rs:0,vg:0,pt:0},pos=Math.max(1,d.r.findIndex(q=>q.p.id===pdfP)+1),st0=stT(x0,d.avg);
