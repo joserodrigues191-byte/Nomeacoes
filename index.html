@@ -458,7 +458,7 @@ return `<div class="card"><div class="row" style="flex-wrap:nowrap;align-items:c
 `<div class="card"><h2>Pessoas</h2>
 ${r.map(x=>`<div class="pl2"><div class="pr" onclick="fl.pp=fl.pp==='${x.p.id}'?'':'${x.p.id}';draw()" style="cursor:pointer"><div class="ln"><div class="tt">${esc(x.p.posto)} ${esc(x.p.nome)} <span class="mut">${fl.pp===x.p.id?"▴":"▾"}</span></div></div>${fl2(x)}</div>
 <div class="bar" style="margin:7px 0 5px"><i style="width:${x.pt/mx*100}%"></i></div>
-<div class="mut">${x.f} ${x.f===1?"nomeação":"nomeações"} · ${tot?(x.pt/tot*100).toFixed(1):"0.0"}% do esforço · viagem ${x.vg?fmtV(x.vg):"–"} · reserva ${x.rs}</div>${fl.pp===x.p.id?hist(x.p):""}</div>`).join("")||`<p class="mut">Sem dados.</p>`}
+<div class="mut">${x.f} ${x.f===1?"nomeação":"nomeações"} · ${tot?(x.pt/tot*100).toFixed(1):"0.0"}% do esforço · viagem ${x.vg?fmtV(x.vg):"–"} · reserva ${x.rs}</div>${fl.pp===x.p.id?`<div class="row" style="margin:8px 0 0"><button onclick="exportPDFP('${x.p.id}')">PDF desta pessoa</button></div>`+hist(x.p):""}</div>`).join("")||`<p class="mut">Sem dados.</p>`}
 <p class="mut">Partilha igual: ${fair.toFixed(1)}% por pessoa. O alerta dispara quando os pontos de uma pessoa se afastam mais de ${TH()}% da média.</p></div>`+expl+sim}
 /* ===== Exportar PDF ===== */
 const HWR=[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,761,556,556,222,556,333,1000,556,556,333,1000,667,333,1000,556,611,556,556,222,222,333,333,350,556,1000,333,1000,500,333,944,556,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500],HWB=[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,761,556,556,278,556,500,1000,556,556,333,1000,667,333,1000,556,611,556,556,278,278,500,500,350,556,1000,333,1000,556,333,944,556,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556];
@@ -483,6 +483,28 @@ const evs=[...d.ev].sort((a,b)=>String(a.data).localeCompare(String(b.data)));
 const ds=evs.map(e=>e.data).filter(Boolean).sort();
 const per=(fl.a||fl.b)?(fl.a&&fl.b?`de ${fd(fl.a)} a ${fd(fl.b)}`:fl.a?`desde ${fd(fl.a)}`:`até ${fd(fl.b)}`):`todos os serviços registados${ds.length?` (de ${fd(ds[0])} a ${fd(ds[ds.length-1])})`:""}`;
 np();
+if(pdfP){const pp0=P(pdfP),x0=d.r.find(q=>q.p.id===pdfP)||{p:pp0,f:0,rs:0,vg:0,pt:0},pos=Math.max(1,d.r.findIndex(q=>q.p.id===pdfP)+1),st0=stT(x0,d.avg);
+T(M,y+10,"Banda Sinfónica da Guarda Nacional Republicana",11,1,GREEN);y+=18;
+T(M,y+16,"Relatório individual de nomeações e esforço",17,1,BLK);y+=26;
+T(M,y+11,`${pp0.posto||"–"} · Nº Adido ${pp0.adido||"–"} · Nº Ordem ${pp0.ordem||"–"} · ${pp0.nome}`,11,1,BLK,CW);y+=15;
+T(M,y+9,`${pp0.inst||nLbl(grp(pp0))}${pp0.cat===GH?" · Chefia GH":""} · Período: ${per}`,9,0,GREY,CW);y+=13;
+T(M,y+9,`Gerado em ${gen} · naipe: ${nLbl(fl.n||grp(pp0))}`,9,0,GREY);y+=17;
+{const bx=[["Nomeações",String(x0.f)],["Reservas",String(x0.rs)],["Viagem total",x0.vg?fmtV(x0.vg):"–"],["Pontos de esforço",x0.pt.toFixed(2).replace(".",",")],["% do esforço do naipe",(d.tot?(x0.pt/d.tot*100).toFixed(1):"0.0")+"%"],["Média do naipe",d.avg.toFixed(2).replace(".",",")+" pts"],["Posição no naipe",pos+"º de "+d.r.length]],g=8,bw=(CW-g*(bx.length-1))/bx.length;
+bx.forEach((b,i)=>{const x=M+i*(bw+g);R(x,y,bw,38,[.9,.94,.92]);T(x+6,y+13,b[0],7.5,0,GREY,bw-8);T(x+6,y+30,b[1],12,1,BLK,bw-8)});y+=46}
+{const cr=st0==="acima"?RED:st0==="abaixo"?AMB:OKC;T(M,y+10,`Face à média do naipe: ${st0||"–"} (alerta quando se afasta mais de ${TH()}%, folga mínima de 0,5 pontos)`,9,1,cr,CW);y+=18}
+const crit=`Critério de cálculo: nas cerimónias e nos concertos, cada nomeação vale 1 ponto, mais 1 ponto por cada ${HV()} ${HV()===1?"hora":"horas"} de viagem, contando ida e volta (a viagem de ida é calculada a partir da Calçada da Ajuda). Nos ensaios, cada ${hTx(HE())} h de ensaio valem 1 ponto (sem viagem). A reserva não conta para os pontos. Contam as nomeações que constam nas listas, e não a presença efetiva. A comparação é feita com as pessoas do mesmo naipe.`;
+wrapT(crit,CW,8.5,0).forEach(l=>{T(M,y+8,l,8.5,0,GREY);y+=11.5});y+=8;
+T(M,y+11,"Detalhe por serviço",11,1,GREEN);y+=15;L(M,y,M+CW,y,GREEN,.8);y+=6;
+const cols=[{h:"Data",w:104},{h:"Tipo",w:98},{h:"Serviço",w:200},{h:"Local",w:120},{h:"Viagem / duração",w:100,r:1},{h:"Estado",w:70},{h:"Pontos",w:60,r:1}];
+const head=()=>{R(M,y,CW,16,GREEN);let x=M;cols.forEach(c=>{if(c.r)TR(x+c.w-4,y+11.5,c.h,8.5,1,WHT);else T(x+4,y+11.5,c.h,8.5,1,WHT,c.w-6);x+=c.w});y+=16};
+head();let n=0;
+evs.forEach(e=>{const x=e.n.find(q=>q.p===pdfP);if(!x||(x.s!=="Nomeado"&&x.s!=="Reserva"))return;if(y+14>BOT){np();head()}
+if(n++%2)R(M,y,CW,14,[.945,.96,.95]);
+const nm=x.s==="Nomeado",vals=[fd(e.data)+(e.ens&&e.ens.b!==e.data?" a "+fd(e.ens.b).slice(0,5):""),tl(e),e.nome||e.local||"Sem nome",e.ens?(e.grupo||"Banda"):(e.local||"–"),e.ens?ensTxt(e):(e.viag!=null?fmtV(e.viag):"–"),nm?"Nomeado":"Reserva",nm?peso(e).toFixed(2).replace(".",","):"não conta"];
+let xx=M;cols.forEach((c,k)=>{const col=k===5&&!nm?AMB:BLK;if(c.r)TR(xx+c.w-4,y+10,vals[k],8.5,0,k===6&&!nm?GREY:BLK);else T(xx+4,y+10,vals[k],8.5,k===5,col,c.w-6);xx+=c.w});y+=14});
+if(!n){T(M+4,y+10,"Sem nomeações nem reservas no período.",8.5,0,GREY);y+=14}
+else{L(M,y+2,M+CW,y+2,GREEN,.6);y+=4;TR(M+CW-4,y+11,`Total: ${x0.f} nomeação(ões) · ${x0.pt.toFixed(2).replace(".",",")} pontos`,9,1,GREEN)}
+}else{
 T(M,y+10,"Banda Sinfónica da Guarda Nacional Republicana",11,1,GREEN);y+=18;
 T(M,y+16,(pdfT||"Resumo de nomeações e esforço")+(fl.n?" — "+nLbl(fl.n):""),17,1,BLK);y+=26;
 T(M,y+9,`Âmbito: ${fl.n?"naipe de "+nLbl(fl.n):"geral (toda a banda)"} · Período: ${per}`,9,0,GREY);y+=13;
@@ -529,7 +551,8 @@ T(M+5,y+12,`${fd(e.data)}${e.ens&&e.ens.b!==e.data?" a "+fd(e.ens.b):""} · ${e.
 info.forEach(l=>{T(M+5,y+10,l,8.5,0,GREY);y+=11});y+=5;
 if(nl.length){nl.forEach(l=>{T(M+5,y+10,l,8.5,0,BLK);y+=11});y+=3}
 flow(items);y+=4});
-pages.forEach((pg,i)=>{ops=pg;L(M,H-30,M+CW,H-30,[.8,.84,.82],.4);T(M,H-20,`Banda Sinfónica da Guarda Nacional Republicana · Nomeações${fl.n?" · "+nLbl(fl.n):" · geral"} · gerado em ${gen}`,7.5,0,GREY);TR(M+CW,H-20,`Página ${i+1} de ${pages.length}`,7.5,0,GREY)});
+}
+pages.forEach((pg,i)=>{ops=pg;L(M,H-30,M+CW,H-30,[.8,.84,.82],.4);T(M,H-20,`Banda Sinfónica da Guarda Nacional Republicana · Nomeações${pdfP?" · individual":fl.n?" · "+nLbl(fl.n):" · geral"} · gerado em ${gen}`,7.5,0,GREY);TR(M+CW,H-20,`Página ${i+1} de ${pages.length}`,7.5,0,GREY)});
 const objs=[];const add=s=>{objs.push(s);return objs.length};
 add("<< /Type /Catalog /Pages 2 0 R >>");add("");
 add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
@@ -542,14 +565,15 @@ objs.forEach((o,i)=>{off.push(out.length);out+=`${i+1} 0 obj\n${o}\nendobj\n`});
 const xr=out.length;
 out+=`xref\n0 ${objs.length+1}\n0000000000 65535 f \n`+off.map(n=>String(n).padStart(10,"0")+" 00000 n \n").join("")+`trailer\n<< /Size ${objs.length+1} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`;
 const u=new Uint8Array(out.length);for(let i=0;i<out.length;i++)u[i]=out.charCodeAt(i)&255;return u}
-let pdfT="";
+let pdfT="",pdfP="";
 async function exportPDF(o){o=o||{};const x=o.x!==undefined?o.x:(fl.x&&naipes().includes(fl.x)?fl.x:""),sa=fl.a,sb=fl.b,sv=fl.n;if(o.a){fl.a=o.a;fl.b=o.b}
-let u;try{const d=calcEq(x);if(!d.ev.length)return alert("Não há serviços no período selecionado.");fl.n=x;pdfT=o.tit||"";u=buildPDF()}catch(e){console.error(e);return alert("Não foi possível gerar o PDF.")}finally{fl.n=sv;fl.a=sa;fl.b=sb;pdfT=""}
+let u;try{const d=calcEq(x);if(!d.ev.length)return alert("Não há serviços no período selecionado.");fl.n=x;pdfT=o.tit||"";pdfP=o.p||"";u=buildPDF()}catch(e){console.error(e);return alert("Não foi possível gerar o PDF.")}finally{fl.n=sv;fl.a=sa;fl.b=sb;pdfT="";pdfP=""}
 const tag=x?"_"+nLbl(x).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z0-9]+/g,"_").replace(/^_+|_+$/g,""):"_Geral",nm=(o.fn||"Nomeacoes")+tag+"_"+new Date().toISOString().slice(0,10)+".pdf",f=new File([u],nm,{type:"application/pdf"});
 try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:nm});return}}catch(e){if(e&&e.name==="AbortError")return}
 const url=URL.createObjectURL(f),a=document.createElement("a");a.href=url;a.download=nm;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
 
 
+function exportPDFP(id){const p=P(id);if(!p)return;exportPDF({x:grp(p),p:id,fn:"Individual_"+String(p.posto||"")+"_"+String(p.nome||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z0-9]+/g,"_")})}
 /* Evolução no tempo */
 const MES=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 const f1=v=>Number.isInteger(v)?String(v):v.toFixed(1).replace(".",",");
