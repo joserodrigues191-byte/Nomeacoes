@@ -99,6 +99,7 @@ main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 .ex{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--mut)}.ex b{color:var(--fg)}
 .ex2{padding:10px 0;border-top:1px solid var(--bd)}.ex2 h3{margin:0 0 4px;font-size:15px;color:var(--ok)}.ex2 p{margin:0 0 4px;font-size:14px}.ex2 p.mut{font-size:13px}
 .sheet{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);display:flex;align-items:flex-end}.sh2{background:var(--bg);width:100%;max-height:85vh;overflow:auto;border-radius:18px 18px 0 0;border-top:1px solid var(--bd);padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.sgn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:11px;font-size:11px;font-weight:700;flex:0 0 22px;margin:0 6px}.sgn.up{background:#1d7a52;color:#fff}.sgn.dn{background:#5a2c26;color:#f08a7e}
 .fch{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}.fch button{border-radius:18px;min-height:36px;padding:4px 14px;font-size:14px}.fch button.on{font-weight:700}
 </style></head><body><main>
 
@@ -277,7 +278,7 @@ function cnt(e){const n=e.n.filter(x=>x.s==="Nomeado").length,r=e.n.filter(x=>x.
 let bmC={};
 function nsum(e,n){const ids=new Set(S.people.filter(p=>mg(p)===n&&inG(p,e)).map(p=>p.id)),a=e.n.filter(x=>x.s==="Nomeado"&&ids.has(x.p)).length,r=e.n.filter(x=>x.s==="Reserva"&&ids.has(x.p)).length;return `${ids.size} efetivo(s)`+(a?` · ${a} nomeado(s)`:"")+(r?` · ${r} reserva`:"")}
 function updSum(e){document.querySelectorAll(".ns").forEach(el=>el.textContent=nsum(e,el.dataset.n))}
-function balMap(ex){const sa=fl.a,sb=fl.b,m={};fl.a="";fl.b="";try{naipes().forEach(v=>{const d=calcEq(v,{ex});d.r.forEach(x=>{m[x.p.id]={pt:x.pt,st:stT(x,d.avg)}})})}finally{fl.a=sa;fl.b=sb}return m}
+function balMap(ex){const sa=fl.a,sb=fl.b,m={};fl.a="";fl.b="";try{naipes().forEach(v=>{const d=calcEq(v,{ex});d.r.forEach(x=>{m[x.p.id]={pt:x.pt,st:stT(x,d.avg),avg:d.avg}})})}finally{fl.a=sa;fl.b=sb}return m}
 function avHtml(e){const L=e.n.filter(x=>x.s==="Nomeado").map(x=>P(x.p)).filter(p=>p&&bmC[p.id]&&bmC[p.id].st==="acima");
 return L.length?`<div class="wr2">⚠ Já acima da média no seu naipe: <b>${L.map(p=>esc(p.posto+" "+p.nome)).join(", ")}</b></div>`:`<p class="mut" style="margin:6px 0">Nenhum nomeado está acima da média.</p>`}
 function avUpd(){const e=EV(edit),el=$("#av");if(e&&el)el.innerHTML=avHtml(e)}
@@ -324,9 +325,13 @@ return `<div class="g3" style="grid-template-columns:1fr 1fr">${fld("Primeiro di
 <p class="mut" style="margin:6px 0">Local: ${e.grupo||"Banda"} (sem deslocação). Toque nos dias para marcar ou desmarcar ensaios (feriados, folgas).</p>
 <div class="dcs">${days.map(d=>{const x=new Date(d+"T12:00:00");return `<button class="dc ${n.dias.includes(d)?"on":""}" onclick="ensTg('${d}',this)"><small>${DS[x.getDay()]}</small>${x.getDate()}</button>`}).join("")||`<span class="mut">Indique os dias.</span>`}</div>
 <p class="mut" id="ens-sum" style="margin-top:8px"></p>`}
+function sgn(bm,e){if(!bm||!bm.avg)return"";const t=Math.max(.5,bm.avg*TH()/100),w=peso(e);
+if(bm.pt<bm.avg-t)return`<span class="sgn up" title="Abaixo da média do naipe">▲</span>`;
+if(bm.pt+w>bm.avg+t)return`<span class="sgn dn" title="Nomeada, ficaria acima da média do naipe">▼</span>`;return""}
+function sgUpd(){const e=EV(edit);if(!e)return;S.people.forEach(p=>{const row=document.getElementById("r_"+p.id);if(!row)return;row.querySelectorAll(".sgn").forEach(x=>x.remove());const h=sgn(bmC[p.id],e);if(h)row.querySelector(".bd").insertAdjacentHTML("beforebegin",h)})}
 function fEv(){const e=EV(edit);if(!e){edit=null;return vEv()}bmC=balMap(e.id);
 const st=id=>(e.n.find(x=>x.p===id)||{}).s||"";let last=null;
-const pk=p=>{const[c,l]=stl(st(p.id)),bm=bmC[p.id];return `<div class="pk ${c}" id="r_${p.id}" onclick="cyc('${p.id}')"><span class="ln">${esc(p.posto||"–")} · ${esc(p.adido||"–")} · ${esc(p.nome)}${p.cat===GH?` <span class="mut">(${esc(p.inst||"sem instrumento")})</span>`:p.inst&&nOf(p.inst)!==p.inst?` <span class="mut">(${esc(p.inst)})</span>`:""}${bm&&bm.st&&bm.st!=="na média"?` <span class="tag ${bm.st==="acima"?"hi":"lo"}">${bm.st}</span>`:""}</span><span class="bd" id="b_${p.id}">${l}</span></div>`};
+const pk=p=>{const[c,l]=stl(st(p.id)),bm=bmC[p.id];return `<div class="pk ${c}" id="r_${p.id}" onclick="cyc('${p.id}')"><span class="ln">${esc(p.posto||"–")} · ${esc(p.adido||"–")} · ${esc(p.nome)}${p.cat===GH?` <span class="mut">(${esc(p.inst||"sem instrumento")})</span>`:p.inst&&nOf(p.inst)!==p.inst?` <span class="mut">(${esc(p.inst)})</span>`:""}</span>${sgn(bm,e)}<span class="bd" id="b_${p.id}">${l}</span></div>`};
 const nl=naipes(true).filter(n=>n==="Chefia"||!CATS.includes(n));if(S.people.some(p=>p.cat===GH))nl.splice(nl.includes("Chefia")?1:0,0,GH);
 const rows=nl.map(n=>{const G=S.people.filter(p=>mg(p)===n&&inG(p,e)).sort(cmpH);if(!G.length)return"";
 return `<details class="nd" ${fl.mo&&fl.mo[n]?"open":""} ontoggle="(fl.mo=fl.mo||{})['${esc(n)}']=this.open"><summary><span class="tt">${esc(n==="Chefia"?"Maestro":nLbl(n))}</span> <span class="mut ns" data-n="${esc(n)}">${nsum(e,n)}</span></summary>${G.map(pk).join("")}</details>`}).join("");
@@ -348,12 +353,12 @@ ${e.tipo==="Concerto"?`<div class="row">${grupoSel(e)}</div>`:""}
 <div class="card"><h2>Montar ${e.grupo==="Orquestra"?"a orquestra":"a banda"}</h2>
 <p class="mut">Toque numa pessoa para a marcar: uma vez <b>Nomeado</b>, duas vezes <b>Reserva</b>, três vezes para retirar.</p>
 <p id="cnt"><b>${cnt(e)}</b></p>
-<div id="av">${avHtml(e)}</div>
+<div id="av">${avHtml(e)}</div><p class="mut" style="margin:4px 0 8px;font-size:12px"><span class="sgn up">▲</span> abaixo da média do naipe · <span class="sgn dn">▼</span> com o peso deste serviço ficaria acima da média</p>
 ${rows||`<p class="mut">Adicione primeiro os efetivos no separador Efetivos.</p>`}
 <div class="row" style="margin-top:12px"><button class="pri" onclick="montar()">Montar ${e.grupo==="Orquestra"?"Orquestra":"Banda"}</button><button onclick="edit=null;draw()">Voltar</button></div></div>`}
 const fmtV=m=>m<60?m+"min":Math.floor(m/60)+"h "+String(m%60).padStart(2,"0")+"min";
 function parseV(t){t=String(t).trim().toLowerCase();let m=t.match(/^(\d+)\s*h\s*(\d{1,2})?/);if(m)return +m[1]*60+(+m[2]||0);m=t.match(/^(\d+)\s*(min|m)?$/);return m?+m[1]:null}
-function setV(v){const e=EV(edit);if(!v.trim()){e.viag=null;e.viagInfo="";save();return}const m=parseV(v);if(m==null){alert("Escreva a duração, por exemplo 1h 05min ou 65.");$("#vg").value=e.viag!=null?fmtV(e.viag):"";return}if(m!==e.viag)lg(e,"Viagem: "+(e.viag!=null?fmtV(e.viag):"–")+" → "+fmtV(m));e.viag=m;e.viagInfo="Valor introduzido à mão.";$("#vg").value=fmtV(m);$("#vst").textContent=e.viagInfo;save()}
+function setV(v){const e=EV(edit);if(!v.trim()){e.viag=null;e.viagInfo="";save();sgUpd();return}const m=parseV(v);if(m==null){alert("Escreva a duração, por exemplo 1h 05min ou 65.");$("#vg").value=e.viag!=null?fmtV(e.viag):"";return}if(m!==e.viag)lg(e,"Viagem: "+(e.viag!=null?fmtV(e.viag):"–")+" → "+fmtV(m));e.viag=m;e.viagInfo="Valor introduzido à mão.";$("#vg").value=fmtV(m);$("#vst").textContent=e.viagInfo;save();sgUpd()}
 async function geo(q){const r=await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=pt&q="+encodeURIComponent(q));const j=await r.json();return j[0]?{lat:+j[0].lat,lon:+j[0].lon}:null}
 async function origem(){try{const c=JSON.parse(localStorage.getItem("nbo"));if(c&&c.lat)return c}catch(e){}
 try{const o=await geo("Calçada da Ajuda, Lisboa");if(o){try{localStorage.setItem("nbo",JSON.stringify(o))}catch(e){}return o}}catch(e){}
@@ -367,7 +372,7 @@ if(!j.routes||!j.routes[0])throw"rota";
 if(e.local.trim()!==q)return;
 {const nv=Math.round(j.routes[0].duration/60);if(nv!==e.viag)lg(e,"Viagem: "+(e.viag!=null?fmtV(e.viag):"–")+" → "+fmtV(nv));e.viag=nv}const km=Math.round(j.routes[0].distance/1000);
 e.viagInfo=`${km} km desde a Calçada da Ajuda · estimativa sem trânsito. Pode corrigir à mão.`;save();
-if(edit===id&&$("#vg")){$("#vg").value=fmtV(e.viag);st().textContent=e.viagInfo}}
+if(edit===id&&$("#vg")){$("#vg").value=fmtV(e.viag);st().textContent=e.viagInfo;sgUpd()}}
 catch(err){if(edit===id&&st())st().textContent=err==="local"?"Não encontrei esse local. Tente um nome mais completo (ex.: Cartaxo, Santarém) ou escreva a viagem à mão.":"Não foi possível calcular a viagem (sem ligação?). Escreva-a à mão."}}
 const lg=(e,a)=>{if(e&&e.montada)(e.log=e.log||[]).push({t:new Date().toISOString(),a})};
 const fdt=t=>{const d=new Date(t);return d.toLocaleDateString("pt-PT")+" "+d.toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"})};
